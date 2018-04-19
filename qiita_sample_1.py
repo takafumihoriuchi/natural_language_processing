@@ -27,7 +27,7 @@ class HiddenMarkovModel(object):
             p_hidden, p_transition = self.expectation(sequence)
             # M-step
             self.maximization(sequence, p_hidden, p_transition)
-            # check if params has come to convergence
+            # check if params has come to convergence (収束)
             if np.allclose(params, np.hstack((self.transition.ravel(), self.observation.ravel()))):  # np.allclose() returns True if two arrays are element-wise equal within a tolerance
                 break
 
