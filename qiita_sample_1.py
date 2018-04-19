@@ -5,20 +5,27 @@ import numpy as np
 class HiddenMarkovModel(object):
 
     def __init__(self, n_states_hidden, n_states_observe):
-        self.n_states_hidden = n_states_hidden
-        self.n_states_observe = n_states_observe
-        self.initial = np.ones(n_states_hidden) / n_states_hidden
-        self.transition = np.ones((n_states_hidden, n_states_hidden)) / (2 * n_states_hidden)
+        # 潜在変数の状態数 |Q|
+        self.n_states_hidden = n_states_hidden                      # e.g: 2
+        # 観測変数の状態数 |Σ|
+        self.n_states_observe = n_states_observe                    # e.g: 2
+        # 初期状態確率分布  π
+        self.initial = np.ones(n_states_hidden) / n_states_hidden   # e.g: (0.5, 0.5)
+        # 状態遷移確率分布  A
+        self.transition = np.ones((n_states_hidden, n_states_hidden)) / (2 * n_states_hidden)  # ([[0.25,0.25],[0.25,0.25]])
         self.transition += np.eye(n_states_hidden) * 0.5
+        # 記号出力確率分布  B
         self.observation = np.random.rand(n_states_observe, n_states_hidden)
         self.observation /= np.sum(self.observation, axis=0, keepdims=True)
 
+    # π, A, B の最尤推定
     def fit(self, sequence, iter_max=100):
+        # repeat EM algorithm
         for i in range(iter_max):
-            params = np.hstack((self.transition.ravel(), self.observation.ravel()))
+            params = np.hstack((self.transition.ravel(), self.observation.ravel()))  # np.ravel() returns a contiguous flattened array  # np.hstack() stacks arrays in sequence horizontally
             p_hidden, p_transition = self.expectation(sequence)
             self.maximization(sequence, p_hidden, p_transition)
-            if np.allclose(params, np.hstack((self.transition.ravel(), self.observation.ravel()))):
+            if np.allclose(params, np.hstack((self.transition.ravel(), self.observation.ravel()))):  # np.allclose() returns True if two arrays are element-wise equal within a tolerance
                 break
 
     def expectation(self, sequence):
@@ -74,14 +81,15 @@ def main():
     coin, cheats = create_toy_data(200)
     print("coin  :", coin)
     print("cheats:", cheats)
-    return
 
+    # we do not give the cheat to HMM; we try to guess this
     hmm = HiddenMarkovModel(2, 2)
-    hmm.fit(coin, 100)
-    p_hidden, _ = hmm.expectation(coin)
+    hmm.fit(coin, 100)                   # train 100 times
+    p_hidden, _ = hmm.expectation(coin)  # get the result (100 trains + 1)
+    print("p_hidden:", p_hidden)
 
-    plt.plot(cheats)
-    plt.plot(p_hidden[:, 1])
+    plt.plot(cheats)                     # answer data
+    plt.plot(p_hidden[:, 1])             # trained result
     for i in range(0, len(coin), 2):
         plt.annotate(str(coin[i]), (i - .75, coin[i] / 2. + 0.2))
     plt.ylim(-0.1, 1.1)
