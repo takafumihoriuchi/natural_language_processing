@@ -23,32 +23,46 @@ class HiddenMarkovModel(object):
         # repeat EM algorithm
         for i in range(iter_max):
             params = np.hstack((self.transition.ravel(), self.observation.ravel()))  # np.ravel() returns a contiguous flattened array  # np.hstack() stacks arrays in sequence horizontally
+            # E-step
             p_hidden, p_transition = self.expectation(sequence)
+            # M-step
             self.maximization(sequence, p_hidden, p_transition)
+            # check if params has come to convergence
             if np.allclose(params, np.hstack((self.transition.ravel(), self.observation.ravel()))):  # np.allclose() returns True if two arrays are element-wise equal within a tolerance
                 break
 
+    # E-step
     def expectation(self, sequence):
         N = len(sequence)
         forward = np.zeros(shape=(N, self.n_states_hidden))
+        # calculate: alpha(z_1) = p(x_1, z_1)
         forward[0] = self.initial * self.observation[sequence[0]]
         backward = np.zeros_like(forward)
+        # calculate: beta(z_N) = p(x_N, z_N)
         backward[-1] = self.observation[sequence[-1]]
+        # forward
         for i in range(1, len(sequence)):
             forward[i] = self.transition.dot(forward[i - 1]) * self.observation[sequence[i]]
+        # backward
         for j in range(N - 2, -1, -1):
             backward[j] = (self.observation[sequence[j + 1]] * backward[j + 1]).dot(self.transition)
+        # 潜在変数z_nの事後確率分布gamma(z_n)を計算
         p_hidden = forward * backward
         p_hidden /= np.sum(p_hidden, axis=-1, keepdims=True)
+        # 連続した潜在変数の同時事後確率分布xi(z_(n-1),z_n)を計算
         p_transition = self.transition * (self.observation[sequence[1:]] * backward[1:])[:, :, None] * forward[:-1, None, :]
         p_transition /= np.sum(p_transition, axis=(1, 2), keepdims=True)
 
         return p_hidden, p_transition
 
+    # M-step
     def maximization(self, sequence, p_hidden, p_transition):
+        # π の更新
         self.initial = p_hidden[0] / np.sum(p_hidden[0])
+        # A の更新
         self.transition = np.sum(p_transition, axis=0) / np.sum(p_transition, axis=(0, 2))
         self.transition /= np.sum(self.transition, axis=0, keepdims=True)
+        # B の更新
         x = p_hidden[:, None, :] * (np.eye(self.n_states_observe)[sequence])[:, :, None]
         self.observation = np.sum(x, axis=0) / np.sum(p_hidden, axis=0)
 
