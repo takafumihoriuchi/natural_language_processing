@@ -14,7 +14,7 @@ class HiddenMarkovModel(object):
         self.observation /= np.sum(self.observation, axis=0, keepdims=True)
 
     def fit(self, sequence, iter_max=100):
-        for i in xrange(iter_max):
+        for i in range(iter_max):
             params = np.hstack((self.transition.ravel(), self.observation.ravel()))
             p_hidden, p_transition = self.expectation(sequence)
             self.maximization(sequence, p_hidden, p_transition)
@@ -27,9 +27,9 @@ class HiddenMarkovModel(object):
         forward[0] = self.initial * self.observation[sequence[0]]
         backward = np.zeros_like(forward)
         backward[-1] = self.observation[sequence[-1]]
-        for i in xrange(1, len(sequence)):
+        for i in range(1, len(sequence)):
             forward[i] = self.transition.dot(forward[i - 1]) * self.observation[sequence[i]]
-        for j in xrange(N - 2, -1, -1):
+        for j in range(N - 2, -1, -1):
             backward[j] = (self.observation[sequence[j + 1]] * backward[j + 1]).dot(self.transition)
         p_hidden = forward * backward
         p_hidden /= np.sum(p_hidden, axis=-1, keepdims=True)
@@ -48,20 +48,23 @@ class HiddenMarkovModel(object):
 
 def create_toy_data(sample_size=100):
 
+    # inner function
     def throw_coin(bias):
         if bias == 1:
             return np.random.choice(range(2), p=[0.2, 0.8])
         else:
             return np.random.choice(range(2), p=[0.8, 0.2])
+        # range(2)     => (0,2)
+        # p=[0.2, 0.8] => p(x=0)=0.2, p(x=1)=0.8
 
-    bias = np.random.uniform() > 0.5
+    bias = np.random.uniform() > 0.5  # uniform() returns [0,1) on default
     coin = []
     cheats = []
-    for i in xrange(sample_size):
+    for i in range(sample_size):
         coin.append(throw_coin(bias))
         cheats.append(bias)
         bias = bias + np.random.choice(range(2), p=[0.99, 0.01])
-        bias = bias % 2
+        bias = bias % 2  # change the biased coin with a probabily of 0.01
     coin = np.asarray(coin)
 
     return coin, cheats
@@ -69,6 +72,9 @@ def create_toy_data(sample_size=100):
 
 def main():
     coin, cheats = create_toy_data(200)
+    print("coin  :", coin)
+    print("cheats:", cheats)
+    return
 
     hmm = HiddenMarkovModel(2, 2)
     hmm.fit(coin, 100)
@@ -76,7 +82,7 @@ def main():
 
     plt.plot(cheats)
     plt.plot(p_hidden[:, 1])
-    for i in xrange(0, len(coin), 2):
+    for i in range(0, len(coin), 2):
         plt.annotate(str(coin[i]), (i - .75, coin[i] / 2. + 0.2))
     plt.ylim(-0.1, 1.1)
     plt.show()
