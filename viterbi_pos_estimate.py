@@ -1,3 +1,8 @@
+"""
+Created on May 17, 2018
+@author: Takafumi Horiuchi
+"""
+
 # for POS estimation
 import numpy as np
 import nltk
