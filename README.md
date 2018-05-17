@@ -1,3 +1,3 @@
-# hidden_markov
-implementation of Hidden Markov Model in Python  
-hello
+# HMM problems in Python
+This repository contains implementations Hidden Markov Model problems.  
+Implementation is mostly in Python.
