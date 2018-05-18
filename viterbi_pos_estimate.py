@@ -85,7 +85,7 @@ def viterbi(sentence, pos_tags, t_w, t_t):
     for pos_idx in X:
         pos_seq.append(pos_tags[pos_idx])
 
-    return max_prob, list(zip(tokens[1:], pos_seq[1:]))
+    return list(zip(tokens[1:], pos_seq[1:]))
 
 
 def setup_progbar(width):
@@ -102,10 +102,10 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 
     ## setup progress bar
     test_size = len(tagged_sents)
-    max_width = 40
-    progbar_width = test_size if test_size < max_width else max_width 
-    prog_step = test_size / progbar_width
+    max_width = 78
+    progbar_width = test_size if test_size < max_width else max_width
     setup_progbar(progbar_width)
+    prog_step = test_size / progbar_width
 
     ## create test sentences from 'tagged_sents_test'
     test_sent_list = []
@@ -118,14 +118,9 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
         ans_tagged_sents.append(each_tagged_sent)
 
     ## setup dictionary for POS specific accuracy
-    ## BETTER TO COMBINE INTO ONE DICTIONARY
-    pos_correct = dict()
-    pos_total = dict()
     pos_accuracy = dict()
     for pos in pos_tags:
-        pos_correct[pos] = 0
-        pos_total[pos] = 0
-        pos_accuracy[pos] = 0.0
+        pos_accuracy[pos] = {'correct': 0, 'total': 0, 'accuracy': 0.0}
 
     ## evaluate created HMM
     prog_cnt = 0          # for progress bar
@@ -133,16 +128,16 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
     correct_word_cnt = 0  # for word based accuracy
     correct_sent_cnt = 0  # for sentence based accuracy
     for sentence, answer in zip(test_sent_list, ans_tagged_sents):
-        token_pos = viterbi(sentence, pos_tags, t_w, t_t)[1]
+        token_pos = viterbi(sentence, pos_tags, t_w, t_t)
         all_pos_matched = True
         for pred, ans in zip(token_pos, answer):
             if (pred[1] == ans[1]):
                 correct_word_cnt += 1
-                pos_correct[pred[1]] += 1
+                pos_accuracy[pred[1]]['correct'] += 1
             else:
                 all_pos_matched = False
             total_word_cnt += 1
-            pos_total[ans[1]] += 1
+            pos_accuracy[ans[1]]['total'] += 1
         if all_pos_matched is True:
             correct_sent_cnt += 1
 
@@ -154,10 +149,10 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 
     # calculate POS specific accuracy
     for pos in pos_tags:
-        if pos_total[pos] == 0:
-            pos_accuracy[pos] = None
+        if pos_accuracy[pos]['total'] == 0:
+            pos_accuracy[pos]['accuracy'] = None
             continue
-        pos_accuracy[pos] = pos_correct[pos] / pos_total[pos]
+        pos_accuracy[pos]['accuracy'] = pos_accuracy[pos]['correct'] / pos_accuracy[pos]['total']
     
     accuracy_token = correct_word_cnt / total_word_cnt
     accuracy_sent = correct_sent_cnt / len(ans_tagged_sents)
@@ -165,7 +160,7 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 
 
 def main():
-    print("+----------------------------------------+")
+    print("+------------------------------------------------------------------------------+")
     
     ## loading of data may consume up to several seconds
     print("loading POS tagsets ...")
@@ -190,29 +185,28 @@ def main():
     ## a list of possible pos tags (</s> is not included)
     pos_tags = list(t_t.keys())
 
-    print(" ---------------------------------------- ")
+    print("--------------------------------------------------------------------------------")
 
     ## sentence to evaluate POS
-    sentence = input("sentence: ")
-    prob, token_pos = viterbi(sentence, pos_tags, t_w, t_t)
+    sentence = input("input a sentence: ")
+    token_pos = viterbi(sentence, pos_tags, t_w, t_t)
 
     ## show results
-    print("probability:", prob)
+    print("POS estimation result:")
     for each_token_pos in token_pos:
         print(each_token_pos)
 
     ## test model precision (may consume several minutes to compute)
-    print(" ---------------------------------------- ")
+    print("--------------------------------------------------------------------------------")
     print("measuring precision of model ...")
     prec_token, prec_sent, pos_acc = calc_accuracy(tagged_sents_test, pos_tags, t_w, t_t)
     print("\nmodel precision")
     print("token based accuracy    :", prec_token)
-    print("sentence based accuracy :", prec_sent)
-    print(" ---------------------------------------- ")
-    print("POS specific accuracy")
+    print("sentence based accuracy :", prec_sent)   
+    print("POS specific accuracy   :")
     for each_pos in pos_tags:
-        print(each_pos, ':', pos_acc[each_pos])
-    print("+----------------------------------------+")
+        print(each_pos, "\t---\t", pos_acc[each_pos])
+    print("+------------------------------------------------------------------------------+")
 
 if __name__ == '__main__':
     main()
