@@ -122,22 +122,33 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
         test_sent_list.append(" ".join(str(x) for x in sentence))
         ans_tagged_sents.append(each_tagged_sent)
 
+    ## setup dictionary for POS specific accuracy
+    pos_correct = dict()
+    pos_total = dict()
+    pos_accuracy = dict()
+    for pos in pos_tags:
+        pos_correct[pos] = 0
+        pos_total[pos] = 0
+        pos_accuracy[pos] = 0.0
+
     ## evaluate created HMM
-    prog_cnt = 0
-    total_cnt = 0
-    accuracy_cnt = 0
-    correct_sent_count = 0
+    prog_cnt = 0          # for progress bar
+    total_word_cnt = 0    # for word based accuracy
+    correct_word_cnt = 0  # for word based accuracy
+    correct_sent_cnt = 0  # for sentence based accuracy
     for sentence, answer in zip(test_sent_list, ans_tagged_sents):
         token_pos = viterbi(sentence, pos_tags, t_w, t_t)[1]
         all_pos_matched = True
         for pred, ans in zip(token_pos, answer):
             if (pred[1] == ans[1]):
-                accuracy_cnt += 1
+                correct_word_cnt += 1
+                pos_correct[pred[1]] += 1
             else:
                 all_pos_matched = False
-            total_cnt += 1
+            total_word_cnt += 1
+            pos_total[ans[1]] += 1
         if all_pos_matched is True:
-            correct_sent_count += 1
+            correct_sent_cnt += 1
 
         # update progress bar
         prog_cnt += 1
@@ -145,9 +156,12 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
             update_progbar()
             prog_cnt = 0
 
-    accuracy_token = accuracy_cnt / total_cnt
-    accuracy_sent = correct_sent_count / len(ans_tagged_sents)
-    return accuracy_token, accuracy_sent
+    for pos in pos_tags:
+        if pos_total[pos] == 0: continue
+        pos_accuracy[pos] = pos_correct[pos] / pos_total[pos]
+    accuracy_token = correct_word_cnt / total_word_cnt
+    accuracy_sent = correct_sent_cnt / len(ans_tagged_sents)
+    return accuracy_token, accuracy_sent, pos_accuracy
 
 
 def main():
@@ -190,10 +204,14 @@ def main():
     ## test model precision (may consume several minutes to compute)
     print(" ---------------------------------------- ")
     print("measuring precision of model ...")
-    prec_token, prec_sent = calc_accuracy(tagged_sents_test, pos_tags, t_w, t_t)
+    prec_token, prec_sent, pos_acc = calc_accuracy(tagged_sents_test, pos_tags, t_w, t_t)
     print("\nmodel precision")
-    print("token based accuracy   :", prec_token)
-    print("sentence based accuracy:", prec_sent)
+    print("token based accuracy    :", prec_token)
+    print("sentence based accuracy :", prec_sent)
+    print(" ---------------------------------------- ")
+    print("POS specific accuracy")
+    for each_pos in pos_tags:
+        print(each_pos, ':', pos_acc[each_pos])
     print("+----------------------------------------+")
 
 if __name__ == '__main__':
