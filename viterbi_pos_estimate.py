@@ -6,6 +6,7 @@ Created on May 17, 2018
 # for POS estimation
 import numpy as np
 import nltk
+import math
 
 # for printing progress-bar
 import time
@@ -45,12 +46,10 @@ def p_t_t(t_t, tag1, tag2, alpha=0.01):
 
 # helper method of viterbi()
 def calc_table(S, T, V, i, j, pos_tags, tokens, t_w, t_t):
-    ## constant 'prec_adjust' is for preventing underflow of probability calculation
-    prec_adjust = 100
-    max_prob = 0.0
+    max_prob = -np.inf
     max_k = 0
     for k in range(S):
-        prob = V[k][i-1] * p_t_w(t_w, pos_tags[j], tokens[i]) * p_t_t(t_t, pos_tags[k], pos_tags[j]) * prec_adjust
+        prob = V[k][i-1] + math.log(p_t_w(t_w, pos_tags[j], tokens[i])) + math.log(p_t_t(t_t, pos_tags[k], pos_tags[j]))
         if prob > max_prob:
             max_prob, max_k = prob, k
     return max_prob, max_k
@@ -65,10 +64,6 @@ def viterbi(sentence, pos_tags, t_w, t_t):
     T = len(tokens)                         # T: number of tokens
     V = np.zeros((S, T), dtype=np.float32)  # V: probability table
     B = np.zeros((S, T), dtype=int)         # B: back-pointer table
-    
-    ## p(<s>)=1.0 : first product in cumulative probability
-    for j in range(S):
-        V[j,0] = 1.0
 
     ## induction
     for i in range(1, T):
@@ -77,7 +72,7 @@ def viterbi(sentence, pos_tags, t_w, t_t):
 
     ## termination and path-readout
     X = np.zeros((T), dtype=int)
-    max_prob = 0.0
+    max_prob = -np.inf
     for j in range(S):
         if V[j][T-1] > max_prob:
             max_prob = V[j][T-1]
@@ -123,6 +118,7 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
         ans_tagged_sents.append(each_tagged_sent)
 
     ## setup dictionary for POS specific accuracy
+    ## BETTER TO COMBINE INTO ONE DICTIONARY
     pos_correct = dict()
     pos_total = dict()
     pos_accuracy = dict()
@@ -156,9 +152,13 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
             update_progbar()
             prog_cnt = 0
 
+    # calculate POS specific accuracy
     for pos in pos_tags:
-        if pos_total[pos] == 0: continue
+        if pos_total[pos] == 0:
+            pos_accuracy[pos] = None
+            continue
         pos_accuracy[pos] = pos_correct[pos] / pos_total[pos]
+    
     accuracy_token = correct_word_cnt / total_word_cnt
     accuracy_sent = correct_sent_cnt / len(ans_tagged_sents)
     return accuracy_token, accuracy_sent, pos_accuracy
