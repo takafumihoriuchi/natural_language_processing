@@ -196,13 +196,13 @@ def main():
     print("\nConditions: Penn-Treebank as POS tagset; train : test = %.2f : %.2f" % (train_ratio, 1 - train_ratio))
     print("--------------------------------------------------------------------------------")
 
-    ## test model precision (may consume several minutes to compute)
-    print("measuring precision of model ...")
+    ## test model precision
+    print("measuring precision of model (may consume several minutes) ...")
     prec_token, prec_sent, pos_acc = calc_accuracy(tagged_sents_test, pos_tags, t_w, t_t)
     print("\nmodel precision")
     print("token based accuracy    :", prec_token)
     print("sentence based accuracy :", prec_sent)   
-    print("POS specific accuracy   :")
+    print("\nPOS specific accuracy   :")
     for each_pos in pos_tags:
         print(each_pos, "\t---\t", pos_acc[each_pos])
     print("+------------------------------------------------------------------------------+")
