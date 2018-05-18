@@ -162,7 +162,7 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 def main():
 
     print("\n+------------------------------------------------------------------------------+")
-    print("This is a POS estimator created by Takafumi Horiuchi.")
+    print("This is a POS estimator created by Takafumi Horiuchi in May of 2018.")
     print("Input of the sentence \"We choose to go to the Moon.\" will output the following:")
     print("('We', 'PRP'), ('choose', 'VB'), ('to', 'TO'), ('go', 'VB'), ('to', 'TO'), ('the', 'DT'), ('moon', 'NN'),('.', '.')")
     print("\nloading POS tagsets ...\n")
