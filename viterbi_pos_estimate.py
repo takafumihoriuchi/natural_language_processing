@@ -106,6 +106,7 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
     progbar_width = test_size if test_size < max_width else max_width
     setup_progbar(progbar_width)
     prog_step = test_size / progbar_width
+    prog_cnt = progbar_width
 
     ## create test sentences from 'tagged_sents_test'
     test_sent_list = []
@@ -123,10 +124,9 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
         pos_accuracy[pos] = {'correct': 0, 'total': 0, 'accuracy': 0.0}
 
     ## evaluate created HMM
-    prog_cnt = 0          # for progress bar
-    total_word_cnt = 0    # for word based accuracy
-    correct_word_cnt = 0  # for word based accuracy
-    correct_sent_cnt = 0  # for sentence based accuracy
+    total_word_cnt = 0
+    correct_word_cnt = 0
+    correct_sent_cnt = 0
     for sentence, answer in zip(test_sent_list, ans_tagged_sents):
         token_pos = viterbi(sentence, pos_tags, t_w, t_t)
         all_pos_matched = True
@@ -160,11 +160,10 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 
 
 def main():
+
     print("+------------------------------------------------------------------------------+")
-    
-    ## loading of data may consume up to several seconds
-    print("loading POS tagsets ...")
-    
+    print("loading POS tagsets ...\n")
+
     ## load POS tagset from Penn Treebank
     tagged_sents = nltk.corpus.treebank.tagged_sents()
 
@@ -185,8 +184,6 @@ def main():
     ## a list of possible pos tags (</s> is not included)
     pos_tags = list(t_t.keys())
 
-    print("--------------------------------------------------------------------------------")
-
     ## sentence to evaluate POS
     sentence = input("input a sentence: ")
     token_pos = viterbi(sentence, pos_tags, t_w, t_t)
@@ -196,8 +193,10 @@ def main():
     for each_token_pos in token_pos:
         print(each_token_pos)
 
-    ## test model precision (may consume several minutes to compute)
+    print("\nConditions: Penn-Treebank as POS tagset; train : test = %.2f : %.2f" % (train_ratio, 1 - train_ratio))
     print("--------------------------------------------------------------------------------")
+
+    ## test model precision (may consume several minutes to compute)
     print("measuring precision of model ...")
     prec_token, prec_sent, pos_acc = calc_accuracy(tagged_sents_test, pos_tags, t_w, t_t)
     print("\nmodel precision")
