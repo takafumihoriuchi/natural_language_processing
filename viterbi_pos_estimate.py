@@ -161,8 +161,11 @@ def calc_accuracy(tagged_sents, pos_tags, t_w, t_t):
 
 def main():
 
-    print("+------------------------------------------------------------------------------+")
-    print("loading POS tagsets ...\n")
+    print("\n+------------------------------------------------------------------------------+")
+    print("This is a POS estimator created by Takafumi Horiuchi.")
+    print("Input of the sentence \"We choose to go to the Moon.\" will output the following:")
+    print("('We', 'PRP'), ('choose', 'VB'), ('to', 'TO'), ('go', 'VB'), ('to', 'TO'), ('the', 'DT'), ('moon', 'NN'),('.', '.')")
+    print("\nloading POS tagsets ...\n")
 
     ## load POS tagset from Penn Treebank
     tagged_sents = nltk.corpus.treebank.tagged_sents()
@@ -205,7 +208,7 @@ def main():
     print("\nPOS specific accuracy   :")
     for each_pos in pos_tags:
         print(each_pos, "\t---\t", pos_acc[each_pos])
-    print("+------------------------------------------------------------------------------+")
+    print("+------------------------------------------------------------------------------+\n")
 
 if __name__ == '__main__':
     main()
