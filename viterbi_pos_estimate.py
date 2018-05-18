@@ -163,7 +163,7 @@ def main():
 
     print("\n+------------------------------------------------------------------------------+")
     print("This is a HMM based POS estimator created by Takafumi Horiuchi in May of 2018.")
-    print("Input of the sentence \"We choose to go to the Moon.\" will output the following:")
+    print("Input of the sentence \"We choose to go to the Moon.\" could output the following:")
     print("('We', 'PRP'), ('choose', 'VB'), ('to', 'TO'), ('go', 'VB'), ('to', 'TO'), ('the', 'DT'), ('moon', 'NN'),('.', '.')")
     print("\nloading POS tagsets ...\n")
 
