@@ -206,8 +206,10 @@ def main():
     print("token based accuracy    :", prec_token)
     print("sentence based accuracy :", prec_sent)   
     print("\nPOS specific accuracy   :")
+
     for each_pos in pos_tags:
         print(each_pos, "\t---\t", pos_acc[each_pos])
+    
     print("+------------------------------------------------------------------------------+\n")
 
 if __name__ == '__main__':
