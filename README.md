@@ -1,4 +1,4 @@
-# Natural Language Processing related codes
+# Natural Language Processing
 
 This repository contains implementations of Natural Language Processing related problems.
 
