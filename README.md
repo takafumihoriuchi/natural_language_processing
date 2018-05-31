@@ -6,6 +6,8 @@ This repository contains implementations of Natural Language Processing related 
 ## viterbi_pos_estimate.py
 
 ```
+takafumihoriuchi$
+takafumihoriuchi$
 takafumihoriuchi$ python viterbi_pos_estimate.py
 
 +------------------------------------------------------------------------------+
@@ -85,6 +87,9 @@ SYM 	---	 {'correct': 0, 'total': 0, 'accuracy': None}
 LS 	---	 {'correct': 0, 'total': 0, 'accuracy': None}
 # 	---	 {'correct': 2, 'total': 2, 'accuracy': 1.0}
 +------------------------------------------------------------------------------+
+
+takafumihoriuchi$
+takafumihoriuchi$
 ```
 
 
