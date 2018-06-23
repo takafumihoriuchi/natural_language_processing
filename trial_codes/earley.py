@@ -7,7 +7,9 @@ import nltk
 
 
 def push(stack, state):
-    stack.insert(0, state)
+    # stack.insert(0, state)
+    stack.append(state)
+    # お尻にくっつけないと、「for state in self.chart[i]:」が進行しない
 
 def flatten_two_dim_list(two_dim_list):
     return [item for sublist in two_dim_list for item in sublist]
@@ -22,17 +24,22 @@ class EarleyParser():
 
 
     def parse(self):
+        # dummy_grammar = nltk.CFG.fromstring("""S -> NP VP""")
         dummy_grammar = nltk.CFG.fromstring("""gamma -> S""")
         dummy_state = (dummy_grammar.productions()[0], 0, 0, 0)
         self.__enqueue(dummy_state, 0)
         for i in range(0, len(self.tokens) + 1):
             for state in self.chart[i]:
-                if (not self.__is_complete(state) and not self.__next_is_pos(state)):
+                if ((not self.__is_complete(state)) and (not self.__next_is_pos(state))):
+                    print("calling PREDICTOR")
                     self.__predictor(state)
-                elif (not self.__is_complete(state) and self.__next_is_pos(state)):
+                elif ((not self.__is_complete(state)) and (self.__next_is_pos(state))):
+                    print("calling SCANNER")
                     self.__scanner(state)
                 else:
+                    print("calling COMPLETER")
                     self.__completer(state)
+                print(self.chart)
         return self.chart
 
 
@@ -48,22 +55,22 @@ class EarleyParser():
     # "NT -> NT・POS", "POS -> word"、次の次がに単語があれば、next_is_pos == True
     # 単語は、単語を左辺にもつような生成規則の集合は空、という性質を利用して得る
     def __next_is_pos(self, state):
-        dot_idx = state[1]
         current_rule = [state[0]]
-        next_rules = self.__get_next_rules(current_rule, dot_idx)
-        print("next_rules:", next_rules)
+        dot_progress = state[1]
+        next_rules = self.__get_next_rules(current_rule, dot_progress)
+        # print("next_rules:", next_rules)
         # current state leads to terminal symbols
         if (next_rules == []):
-            print("symbol next to dot is a word")
+            # print("symbol next to dot is a word")
             return False
         next_next_rules = self.__get_next_rules(next_rules)
-        print("next_next_rules:", next_next_rules)
+        # print("next_next_rules:", next_next_rules)
         # current state leads to POS
         if (next_next_rules == []):
-            print("symbol next to dot is a POS")
+            # print("symbol next to dot is a POS")
             return True
-        # if current state leads to non-POS/non-word
-        print("symbol next to dot is neither a word nor a POS")
+        # current state leads to non-POS/non-word
+        # print("symbol next to dot is neither a word nor a POS")
         return False
 
 
@@ -72,10 +79,10 @@ class EarleyParser():
     # by specifying the dot_idx, 
     # a list of rules begining with [symbol right after the dot] will be returned
     # dot_index functions properly only when len(rules)==1
-    def __get_next_rules(self, rules, dot_idx=None):
+    def __get_next_rules(self, rules, dot_progress=None):
         next_rules_all = []
-        if len(rules) is 1 and dot_idx is not None:
-            rhs_list = [rules[0].rhs()[dot_idx]]
+        if len(rules) is 1 and dot_progress is not None:
+            rhs_list = [rules[0].rhs()[dot_progress]]
         else:
             rhs_list = [rhs for rule in rules for rhs in rule.rhs()]
         for each_rhs in rhs_list:
@@ -88,16 +95,49 @@ class EarleyParser():
         return next_rules_all_flat
 
 
+    # state = (rule, dot_progress, begin_idx, dot_idx)
     def __predictor(self, state):
-        pass
+        current_rule = [state[0]]
+        dot_progress = state[1]
+        dot_idx = state[3]
+        next_rules = self.__get_next_rules(current_rule, dot_progress)
+        print("current_rule", current_rule)
+        print("next_rules", next_rules)
+        for next_rule in next_rules:
+            new_state = (next_rule, 0, dot_idx, dot_idx)
+            self.__enqueue(new_state, dot_idx)
 
 
+    # state = (rule, dot_progress, begin_idx, dot_idx)
     def __scanner(self, state):
-        pass
+        current_rule = state[0]
+        dot_progress = state[1]
+        dot_idx = state[3]
+        productions = self.grammar.productions(rhs=self.tokens[dot_idx])
+        for production in productions:
+            if production.lhs() == current_rule.rhs()[dot_progress]:
+                new_state = (production, 0, dot_idx, dot_idx + 1)
+                self.__enqueue(new_state, dot_idx + 1)
 
 
+    # state = (rule, dot_progress, begin_idx, dot_idx)
     def __completer(self, state):
-        pass
+        current_rule = state[0]
+        dot_idx = state[3]
+        B = current_rule.lhs()
+        begin_idx = state[2]
+        self.chart[begin_idx]
+        for state_in_chart in self.chart[begin_idx]:
+            dot_idx_in_chart = state_in_chart[3]
+            if not (dot_idx_in_chart == begin_idx):
+                continue
+            rule_in_chart = state_in_chart[0]
+            rhs_in_chart = rule_in_chart.rhs()
+            for rhs_symbol, dot_progress in enumerate(rhs_in_chart):
+                if (rhs_symbol == B):
+                    begine_idx_chart = state_in_chart[2]
+                    new_state = (rule_in_chart, dot_progress + 1, begine_idx_chart, dot_idx)
+                    self.__enqueue(new_state, dot_idx)
 
 
     def __enqueue(self, state, chart_entry):
@@ -123,7 +163,7 @@ def main():
 
     parser = EarleyParser(grammar, tokens)
     chart = parser.parse()
-    print(chart)
+    # print(chart)
 
 
 if __name__ == '__main__':
