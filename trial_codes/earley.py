@@ -143,18 +143,8 @@ class EarleyParser():
             rule_in_chart = state_in_chart[0]
             dot_progress_in_chart = state_in_chart[1]
             rhs_in_chart = rule_in_chart.rhs()
-            """
-            if (rhs_in_chart[dot_progress_in_chart] == B):
-                begine_idx_chart = state_in_chart[2]
-                new_state = (rule_in_chart, dot_progress_in_chart + 1, begine_idx_chart, dot_idx)
-                print("new_state", new_state)
-                self.__enqueue(new_state, dot_idx)
-            """
+            # ルールの進捗状況によって弾く
             for new_dot_progress, rhs_symbol in enumerate(rhs_in_chart):
-                print("new_dot_progress", new_dot_progress)
-                print("rhs_symbol", rhs_symbol)
-                print("B", B)
-                # ルールの進捗状況によって弾く
                 if (rhs_symbol == B) and (rhs_in_chart[dot_progress_in_chart] == B):
                     begine_idx_chart = state_in_chart[2]
                     new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx)
@@ -162,7 +152,6 @@ class EarleyParser():
                     self.__enqueue(new_state, dot_idx)
                     break
             
-
 
     def __enqueue(self, state, chart_entry):
         if state not in self.chart[chart_entry]:
