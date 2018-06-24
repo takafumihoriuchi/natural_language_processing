@@ -9,7 +9,7 @@ import nltk
 def push(stack, state):
     # stack.insert(0, state)
     stack.append(state)
-    # お尻にくっつけないと、「for state in self.chart[i]:」が進行しない
+    # 末尾にくっつけないと「for state in self.chart[i]:」が進行しない
 
 def flatten_two_dim_list(two_dim_list):
     return [item for sublist in two_dim_list for item in sublist]
@@ -30,6 +30,7 @@ class EarleyParser():
         self.__enqueue(dummy_state, 0)
         for i in range(0, len(self.tokens) + 1):
             for state in self.chart[i]:
+                print("evaluating state :", state)
                 if ((not self.__is_complete(state)) and (not self.__next_is_pos(state))):
                     print("calling PREDICTOR")
                     self.__predictor(state)
@@ -39,7 +40,10 @@ class EarleyParser():
                 else:
                     print("calling COMPLETER")
                     self.__completer(state)
-                print(self.chart)
+                # print(self.chart)
+                for entry in self.chart:
+                    print(entry)
+                print("=================")
         return self.chart
 
 
@@ -111,33 +115,53 @@ class EarleyParser():
     # state = (rule, dot_progress, begin_idx, dot_idx)
     def __scanner(self, state):
         current_rule = state[0]
+        print("current_rule", current_rule)
         dot_progress = state[1]
         dot_idx = state[3]
         productions = self.grammar.productions(rhs=self.tokens[dot_idx])
         for production in productions:
+            # 'I'を産み出す左辺と、current_ruleのdotの右隣が一致すれば
             if production.lhs() == current_rule.rhs()[dot_progress]:
-                new_state = (production, 0, dot_idx, dot_idx + 1)
+                # このnew_stateのdot_progressを0にするか1にするかが味噌
+                new_state = (production, 1, dot_idx, dot_idx + 1)
                 self.__enqueue(new_state, dot_idx + 1)
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
     def __completer(self, state):
-        current_rule = state[0]
-        dot_idx = state[3]
-        B = current_rule.lhs()
-        begin_idx = state[2]
-        self.chart[begin_idx]
+        current_rule = state[0] # (B -> y・)
+        begin_idx = state[2] # j
+        dot_idx = state[3] # k
+        B = current_rule.lhs() # e.g. NP
+        # for each (A -> a ・ B b, [i,j]) in chart[j] do
         for state_in_chart in self.chart[begin_idx]:
+            print("state_in_chart", state_in_chart)
             dot_idx_in_chart = state_in_chart[3]
+            # 位置について弾く
             if not (dot_idx_in_chart == begin_idx):
                 continue
             rule_in_chart = state_in_chart[0]
+            dot_progress_in_chart = state_in_chart[1]
             rhs_in_chart = rule_in_chart.rhs()
-            for rhs_symbol, dot_progress in enumerate(rhs_in_chart):
-                if (rhs_symbol == B):
+            """
+            if (rhs_in_chart[dot_progress_in_chart] == B):
+                begine_idx_chart = state_in_chart[2]
+                new_state = (rule_in_chart, dot_progress_in_chart + 1, begine_idx_chart, dot_idx)
+                print("new_state", new_state)
+                self.__enqueue(new_state, dot_idx)
+            """
+            for new_dot_progress, rhs_symbol in enumerate(rhs_in_chart):
+                print("new_dot_progress", new_dot_progress)
+                print("rhs_symbol", rhs_symbol)
+                print("B", B)
+                # ルールの進捗状況によって弾く
+                if (rhs_symbol == B) and (rhs_in_chart[dot_progress_in_chart] == B):
                     begine_idx_chart = state_in_chart[2]
-                    new_state = (rule_in_chart, dot_progress + 1, begine_idx_chart, dot_idx)
+                    new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx)
+                    print("new_state", new_state)
                     self.__enqueue(new_state, dot_idx)
+                    break
+            
 
 
     def __enqueue(self, state, chart_entry):
@@ -163,7 +187,9 @@ def main():
 
     parser = EarleyParser(grammar, tokens)
     chart = parser.parse()
-    # print(chart)
+    
+    for entry in chart:
+        print(entry)
 
 
 if __name__ == '__main__':
