@@ -2,7 +2,6 @@
 author : takafumihoriuchi
 created in June of 2018
 """
-
 import nltk
 
 
@@ -162,15 +161,16 @@ class EarleyParser():
 def main():
 
     grammar = nltk.CFG.fromstring("""
-        S   -> NP VP
-        PP  -> P NP
-        NP  -> Det N | Det N PP | 'I'
-        VP  -> V NP | VP PP
+        S   -> NP VP | NPI VP
+        PP  -> P NP | P NPI
+        NP  -> Det N | Det N PP
+        NPI -> 'I'
+        VP  -> V NP | VP PP | V NPI
         Det -> 'an' | 'my'
         N   -> 'elephant' | 'pajamas'
         V   -> 'shot'
         P   -> 'in'
-        """)
+    """)
 
     tokens = "I shot an elephant in my pajamas.".strip(".").split()
 
@@ -183,3 +183,45 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+"""
+"I shot an elephant in my pajamas."
+
+S   -> NP VP
+PP  -> P NP
+NP  -> Det N | Det N PP | 'I'
+VP  -> V NP | VP PP
+Det -> 'an' | 'my'
+N   -> 'elephant' | 'pajamas'
+V   -> 'shot'
+P   -> 'in'
+
+# edited ver.
+S   -> NP VP | NPI VP
+PP  -> P NP | P NPI
+NP  -> Det N | Det N PP
+NPI -> 'I'
+VP  -> V NP | VP PP | V NPI
+Det -> 'an' | 'my'
+N   -> 'elephant' | 'pajamas'
+V   -> 'shot'
+P   -> 'in'
+"""
+
+"""
+"book that flight"
+
+S -> NP  VP
+S -> Aux NP VP
+S -> VP
+NP -> Det NOM
+NOM -> Noun
+NOM -> Noun NOM
+VP -> Verb
+VP -> Verb NP
+Det -> that | this | a | the
+Noun -> book | flight | meal | man
+Verb -> book | include | read
+Aux -> does
+"""
