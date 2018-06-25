@@ -5,13 +5,20 @@ created in June of 2018
 import nltk
 
 
+
 def push(stack, state):
-    # stack.insert(0, state)
     stack.append(state)
+    # stack.insert(0, state)
     # 末尾にくっつけないと「for state in self.chart[i]:」が進行しない
 
 def flatten_two_dim_list(two_dim_list):
     return [item for sublist in two_dim_list for item in sublist]
+
+def print_chart(chart):
+    for row in chart:
+        print(row)
+    print("=================")
+
 
 
 class EarleyParser():
@@ -23,7 +30,6 @@ class EarleyParser():
 
 
     def parse(self):
-        # dummy_grammar = nltk.CFG.fromstring("""S -> NP VP""")
         dummy_grammar = nltk.CFG.fromstring("""gamma -> S""")
         dummy_state = (dummy_grammar.productions()[0], 0, 0, 0)
         self.__enqueue(dummy_state, 0)
@@ -31,20 +37,29 @@ class EarleyParser():
             for state in self.chart[i]:
                 print("evaluating state :", state)
                 if (not self.__is_complete(state)):
-                    print("calling PREDICTOR")
                     self.__predictor(state)
                 else:
-                    print("calling COMPLETER")
                     self.__completer(state)
-                # print(self.chart)
-                for entry in self.chart:
-                    print(entry)
-                print("=================")
+                print_chart(self.chart)
+        self.__check_success(dummy_state)
         return self.chart
+
+
+    def __check_success(self, dummy_state):
+        for row in self.chart:
+            for state in row:
+                flg1 = (state[0].lhs() == dummy_state[0].rhs()[0])
+                flg2 = (self.__is_complete(state))
+                flg3 = (state[2] == 0)
+                flg4 = (state[3] == len(self.tokens))
+                if (flg1 and flg2 and flg3 and flg4):
+                    print("PARSE SUCCESS", state)
+                    return
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
     def __predictor(self, state):
+        print("PREDICTOR called")
         current_rule = [state[0]]
         dot_progress = state[1]
         dot_idx = state[3]
@@ -62,6 +77,7 @@ class EarleyParser():
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
     def __completer(self, state):
+        print("COMPLETER called")
         current_rule = state[0] # (B -> y・)
         begin_idx = state[2] # j
         dot_idx = state[3] # k
@@ -125,9 +141,9 @@ class EarleyParser():
 
 def main():
 
-    # NP は、POSでもあり、非終端記号でもあるため、
+    # NPは、非終端記号であり、かつPOSでもあるため、
     # J&Mに乗っているアルゴリズムでは、この文法は扱えない。
-    # そこで、scannerを除いたアルゴリズムを実装した。
+    # そこで、scannerを除いたアルゴリズムを実装した。（元論文の実装）
     grammar = nltk.CFG.fromstring("""
         S   -> NP VP
         PP  -> P NP
@@ -144,8 +160,7 @@ def main():
     parser = EarleyParser(grammar, tokens)
     chart = parser.parse()
     
-    for entry in chart:
-        print(entry)
+    # print_chart(chart)
 
 
 if __name__ == '__main__':
