@@ -54,7 +54,6 @@ class EarleyParser():
                 flg4 = (state[3] == len(self.tokens))
                 if (flg1 and flg2 and flg3 and flg4):
                     print("PARSE SUCCESS", state)
-                    return
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
