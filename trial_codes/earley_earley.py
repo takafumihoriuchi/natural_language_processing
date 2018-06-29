@@ -27,12 +27,13 @@ class EarleyParser():
         self.grammar = grammar
         self.tokens = tokens
         self.chart = [[] for _ in range(len(tokens) + 1)]
+        self.back_tracker = [[] for _ in range(len(tokens) + 1)]
         self.state_id = 0
 
 
     def parse(self):
         dummy_grammar = nltk.CFG.fromstring("""gamma -> S""")
-        dummy_state = (dummy_grammar.productions()[0], 0, 0, 0, self.state_id)
+        dummy_state = (dummy_grammar.productions()[0], 0, 0, 0)
         self.__enqueue(dummy_state, 0)
         for i in range(0, len(self.tokens) + 1):
             for j, state in enumerate(self.chart[i]):
@@ -47,17 +48,32 @@ class EarleyParser():
 
 
     def __check_success(self, dummy_state):
-        for state in self.chart[len(self.tokens)]:
+        for j, state in enumerate(self.chart[len(self.tokens)]):
             flg1 = (state[0].lhs() == dummy_state[0].rhs()[0])
             flg2 = (self.__is_complete(state))
             flg3 = (state[2] == 0)
             flg4 = (state[3] == len(self.tokens))
             if (flg1 and flg2 and flg3 and flg4):
                 print("PARSE SUCCESS", state)
+                success_id = self.back_tracker[len(self.tokens)][j][0]
+                self.__back_track(success_id)
+
+    
+    def __back_track(self, parent_id):
+        # back-track (HACK: make into a function)
+        # (俺のid, [list of 俺が生成した新しいstate])
+        #for i in range(0, len(self.tokens) + 1):
+        #    for j, state in enumerate(self.chart[i]):
+        for i, col in enumerate(self.back_tracker):
+            for j, entry in enumerate(col):
+                if (entry[0] == parent_id):
+                    print(self.chart[i][j][0])  # print(production-rule)
+                    for child_id in entry[1]:
+                        self.__back_track(child_id)
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
-    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
+    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx)
     def __predictor(self, state):
         print("PREDICTOR called")
         current_rule = [state[0]]
@@ -67,16 +83,16 @@ class EarleyParser():
         next_rules = self.__get_next_rules(current_rule, dot_progress)
         print("next_rules:", next_rules)
         if next_rules == []:  # meaning that current rule produce a 終端記号
-            new_state = (state[0], dot_progress + 1, dot_idx, dot_idx + 1, self.state_id)
+            new_state = (state[0], dot_progress + 1, dot_idx, dot_idx + 1)
             self.__enqueue(new_state, dot_idx + 1)
             return
         for next_rule in next_rules:
-            new_state = (next_rule, 0, dot_idx, dot_idx, self.state_id)
+            new_state = (next_rule, 0, dot_idx, dot_idx)
             self.__enqueue(new_state, dot_idx)
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
-    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
+    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx)
     def __completer(self, state, i, j):
         print("COMPLETER called")
         current_rule = state[0] # (B -> y・)
@@ -97,26 +113,30 @@ class EarleyParser():
             for new_dot_progress, rhs_symbol in enumerate(rhs_in_chart):
                 if (rhs_symbol == B) and (dot_progress_in_chart == new_dot_progress):
                     begine_idx_chart = state_in_chart[2]
-                    new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx, self.state_id)
+                    new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx)
                     print("new_state:", new_state)
+                    #
+                    # each back_tracker cell contains:
+                    # (俺のid, [list of 俺が生成した新しいstate])
+                    # ただし、俺=current_state(=chart[i][j])
+                    self.back_tracker[i][j][1].append(self.state_id)
+                    #
                     self.__enqueue(new_state, dot_idx)
                     break
             
 
-    # ここ！！！！！！！！！！！！！！！！！！！！！！
-    # if state not in self.chart[chart_entry]:
-    # stateに固有のIDなどを与えると、一致することがなくなる。
-    # ここ！！！！！！！！！！！！！！！！！！！！！！
-    # ここ！！！！！！！！！！！！！！！！！！！！！！
-    # ここ！！！！！！！！！！！！！！！！！！！！！！
-    # ここ！！！！！！！！！！！！！！！！！！！！！！
-    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
+    # state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx)
     def __enqueue(self, state, chart_entry):
         if (chart_entry > len(self.tokens)):
             return # ignore (parse already finished)
-        if state[:4] not in self.chart[chart_entry][:4]:
+        if state not in self.chart[chart_entry]:
             push(self.chart[chart_entry], state)
-            self.state_id += 1
+            #
+            # 自分のstate_idを登録する
+            back_track_info = (self.state_id, [])
+            self.back_tracker[chart_entry].append(back_track_info)
+            #
+        self.state_id += 1
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
