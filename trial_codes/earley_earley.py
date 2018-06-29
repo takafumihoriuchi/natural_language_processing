@@ -22,60 +22,62 @@ def print_chart(chart):
 
 
 class EarleyParser():
-    
+
     def __init__(self, grammar, tokens):
         self.grammar = grammar
         self.tokens = tokens
         self.chart = [[] for _ in range(len(tokens) + 1)]
+        self.state_id = 0
 
 
     def parse(self):
         dummy_grammar = nltk.CFG.fromstring("""gamma -> S""")
-        dummy_state = (dummy_grammar.productions()[0], 0, 0, 0)
+        dummy_state = (dummy_grammar.productions()[0], 0, 0, 0, self.state_id)
         self.__enqueue(dummy_state, 0)
         for i in range(0, len(self.tokens) + 1):
-            for state in self.chart[i]:
-                print("evaluating state :", state)
+            for j, state in enumerate(self.chart[i]):
+                print("evaluating state:", state)
                 if (not self.__is_complete(state)):
                     self.__predictor(state)
                 else:
-                    self.__completer(state)
+                    self.__completer(state, i, j)
                 print_chart(self.chart)
         self.__check_success(dummy_state)
         return self.chart
 
 
     def __check_success(self, dummy_state):
-        for row in self.chart:
-            for state in row:
-                flg1 = (state[0].lhs() == dummy_state[0].rhs()[0])
-                flg2 = (self.__is_complete(state))
-                flg3 = (state[2] == 0)
-                flg4 = (state[3] == len(self.tokens))
-                if (flg1 and flg2 and flg3 and flg4):
-                    print("PARSE SUCCESS", state)
+        for state in self.chart[len(self.tokens)]:
+            flg1 = (state[0].lhs() == dummy_state[0].rhs()[0])
+            flg2 = (self.__is_complete(state))
+            flg3 = (state[2] == 0)
+            flg4 = (state[3] == len(self.tokens))
+            if (flg1 and flg2 and flg3 and flg4):
+                print("PARSE SUCCESS", state)
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
+    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
     def __predictor(self, state):
         print("PREDICTOR called")
         current_rule = [state[0]]
         dot_progress = state[1]
         dot_idx = state[3]
+        print("current_rule:", current_rule)
         next_rules = self.__get_next_rules(current_rule, dot_progress)
-        print("current_rule", current_rule)
-        print("next_rules", next_rules)
-        if next_rules == []:
-            new_state = (state[0], dot_progress + 1, dot_idx, dot_idx + 1)
+        print("next_rules:", next_rules)
+        if next_rules == []:  # meaning that current rule produce a 終端記号
+            new_state = (state[0], dot_progress + 1, dot_idx, dot_idx + 1, self.state_id)
             self.__enqueue(new_state, dot_idx + 1)
             return
         for next_rule in next_rules:
-            new_state = (next_rule, 0, dot_idx, dot_idx)
+            new_state = (next_rule, 0, dot_idx, dot_idx, self.state_id)
             self.__enqueue(new_state, dot_idx)
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
-    def __completer(self, state):
+    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
+    def __completer(self, state, i, j):
         print("COMPLETER called")
         current_rule = state[0] # (B -> y・)
         begin_idx = state[2] # j
@@ -83,7 +85,7 @@ class EarleyParser():
         B = current_rule.lhs() # e.g. NP
         # for each (A -> a ・ B b, [i,j]) in chart[j] do
         for state_in_chart in self.chart[begin_idx]:
-            print("state_in_chart", state_in_chart)
+            print("state_in_chart:", state_in_chart)
             dot_idx_in_chart = state_in_chart[3]
             # 位置について弾く
             if not (dot_idx_in_chart == begin_idx):
@@ -95,17 +97,26 @@ class EarleyParser():
             for new_dot_progress, rhs_symbol in enumerate(rhs_in_chart):
                 if (rhs_symbol == B) and (dot_progress_in_chart == new_dot_progress):
                     begine_idx_chart = state_in_chart[2]
-                    new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx)
-                    print("new_state", new_state)
+                    new_state = (rule_in_chart, new_dot_progress + 1, begine_idx_chart, dot_idx, self.state_id)
+                    print("new_state:", new_state)
                     self.__enqueue(new_state, dot_idx)
                     break
             
 
+    # ここ！！！！！！！！！！！！！！！！！！！！！！
+    # if state not in self.chart[chart_entry]:
+    # stateに固有のIDなどを与えると、一致することがなくなる。
+    # ここ！！！！！！！！！！！！！！！！！！！！！！
+    # ここ！！！！！！！！！！！！！！！！！！！！！！
+    # ここ！！！！！！！！！！！！！！！！！！！！！！
+    # ここ！！！！！！！！！！！！！！！！！！！！！！
+    # => state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx, 4:state_id)
     def __enqueue(self, state, chart_entry):
         if (chart_entry > len(self.tokens)):
             return # ignore (parse already finished)
-        if state not in self.chart[chart_entry]:
+        if state[:4] not in self.chart[chart_entry][:4]:
             push(self.chart[chart_entry], state)
+            self.state_id += 1
 
 
     # state = (rule, dot_progress, begin_idx, dot_idx)
