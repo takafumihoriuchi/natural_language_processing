@@ -20,7 +20,6 @@ def print_chart(chart):
     print("=================")
 
 
-
 class EarleyParser():
 
     def __init__(self, grammar, tokens):
@@ -43,6 +42,7 @@ class EarleyParser():
                 else:
                     self.__completer(state, i, j)
                 print_chart(self.chart)
+        print_chart(self.back_tracker)
         self.__check_success(dummy_state)
         return self.chart
 
@@ -59,6 +59,7 @@ class EarleyParser():
                 self.__back_track(success_id)
 
     
+    # recursive function
     def __back_track(self, parent_id):
         # back-track (HACK: make into a function)
         # (俺のid, [list of 俺が生成した新しいstate])
@@ -67,7 +68,8 @@ class EarleyParser():
         for i, col in enumerate(self.back_tracker):
             for j, entry in enumerate(col):
                 if (entry[0] == parent_id):
-                    print(self.chart[i][j][0])  # print(production-rule)
+                    # print(self.chart[i][j][0])  # print(production-rule)
+                    print("state:", self.chart[i][j], "| (id, child_id):", self.back_tracker[i][j])
                     for child_id in entry[1]:
                         self.__back_track(child_id)
 
@@ -123,7 +125,7 @@ class EarleyParser():
                     #
                     self.__enqueue(new_state, dot_idx)
                     break
-            
+
 
     # state = (0:rule, 1:dot_progress, 2:begin_idx, 3:dot_idx)
     def __enqueue(self, state, chart_entry):
