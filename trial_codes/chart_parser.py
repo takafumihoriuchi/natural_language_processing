@@ -30,27 +30,41 @@ class Parser():
         
         self.start_symbol = start_symbol
         self.__initialize(tokens, start_symbol, parse_strategy, search_strategy)
-        
+
         while (self.agenda):
             edge = self.agenda.pop(0)  # pop from agenda
             print("from agenda", edge)
             self.__process_edge(edge, parse_strategy, search_strategy)
-        
+
+        # self.__check_success()
+        print(self.chart)
         self.trees = self.__make_trees(tokens)
         return self.trees
 
 
+    # edge = (rule, dot_progress, begin_idx, dot_idx)
     def __initialize(self, tokens, start_symbol, parse_strategy, search_strategy):
-        # ここでagendaにstateを詰め込む
-        pass
+        for i in reversed(range(len(tokens))): # change this depending on pushing to stack or queue, want 'I' at top, and 'pajamas' on the bottom
+            print(i)
+            rule = self.grammar.productions(rhs=tokens[i])[0]
+            dot_progress = len(rule.rhs())
+            begin_idx = i
+            dot_idx = i + 1
+            passive_edge = (rule, dot_progress, begin_idx, dot_idx)
+            self.__add_to_agenda(passive_edge)
+
+
+
+   # def __check_success(self):
+   #      pass
 
 
     def __process_edge(self, edge, parse_strategy, search_strategy):
         self.__add_to_chart(edge)
-        if self.__is_complete(edge) is False:
+        if self.__is_complete(edge) is False:  # edge is an active arc
             self.__forward_fundamental_rule(edge)
         else:
-            self.__backward_fundamental_rule(edge)
+            self.__backward_fundamental_rule(edge)  # edge is a passive arc
         self.__make_predictions(edge, parse_strategy)
 
 
@@ -88,9 +102,9 @@ class Parser():
         dot_progress = edge[1]
         begin_idx    = edge[2]
         dot_idx      = edge[3]
-        B = current_rule.lhs()[0]
-        preceeding_edges = self.__get_all_matching_edges(calling_fun='bf', stack=self.chart, rule_rhs=B, dot_idx=begin_idx)
-        for each_edge in preceeding_edges:
+        B = current_rule.lhs()
+        precedent_edges = self.__get_all_matching_edges(calling_fun='bf', stack=self.chart, rule_rhs=B, dot_idx=begin_idx)
+        for each_edge in precedent_edges:
             new_rule = each_edge[0]
             new_dotp = each_edge[1] + 1
             new_bidx = each_edge[2]
@@ -106,8 +120,8 @@ class Parser():
         if (calling_fun == 'ff'):
             lhs_list = []
             for edge in stack:
-                if edge[0].lhs()[0] == rule_lhs:
-                    B_list.append(edge)
+                if edge[0].lhs() == rule_lhs:
+                    lhs_list.append(edge)
             lhs_rhs_list = []
             for edge in lhs_list:
                 if self.__is_complete(edge):
@@ -122,10 +136,10 @@ class Parser():
         elif (calling_fun == 'bf'):
             rhs_list = []
             for edge in stack:
-                if __is_complete(edge):
+                if self.__is_complete(edge):
                     continue
                 dot_prog = edge[1]
-                if (edge[0].rhs()[dot_prog] == B):
+                if (edge[0].rhs()[dot_prog] == rule_rhs):
                     rhs_list.append(edge)
             rhs_didx_list = []
             for edge in rhs_list:
@@ -137,8 +151,10 @@ class Parser():
             return []
 
 
+    # スタック　＝＞　深さ優先探索
+    # キュー　　＝＞　幅優先探索
     def __add_to_agenda(self, edge):
-        if edge not in self.agenda:
+        if (edge not in self.agenda) and (edge not in self.chart):
             self.agenda.insert(0, edge)  # push to agenda
 
 
@@ -165,16 +181,18 @@ class Parser():
             self.__add_to_agenda(new_edge)
 
 
+    # bottom up (look at passive arcs)
+    # only predict new constituents based on already completed ones
     def __bottom_up_predict(self, edge):
         current_rule = edge[0]
         dot_progress = edge[1]
         begin_idx    = edge[2]
         dot_idx      = edge[3]
-        B = current_rule.lhs()[0]
-        preceeding_grammars = self.__get_all_matching_grammars(calling_fun='bu', rule_rhs=B)
-        for each_grammar in precceeding_grammars:
+        B = current_rule.lhs()
+        precedent_grammars = self.__get_all_matching_grammars(calling_fun='bu', rule_rhs=B)
+        for each_grammar in precedent_grammars:
             new_rule = each_grammar
-            new_dotp = 1
+            new_dotp = 1 # The dot is right behind the arrow???? if so, new_dotp = 0
             new_bidx = begin_idx
             new_didx = dot_idx
             new_edge = (new_rule, new_dotp, new_bidx, new_didx)
@@ -184,7 +202,7 @@ class Parser():
     def __get_all_matching_grammars(self, calling_fun=None, rule_lhs=None, rule_rhs=None, begin_idx=None, dot_idx=None):
         # for top_down_predict
         # (B -> y)
-        elif (calling_fun == 'td'):
+        if (calling_fun == 'td'):
             lhs_list = []
             for each_grammar in self.grammar:
                 if each_grammar.lhs()[0] == rule_lhs:
@@ -193,10 +211,10 @@ class Parser():
         # for bottom_up_predict
         elif (calling_fun == 'bu'):
             rhs_list = []
-            for each_grammar in self.grammar:
+            for each_grammar in self.grammar.productions():
                 if each_grammar.rhs()[0] == rule_rhs:
                     rhs_list.append(each_grammar)
-        return rhs_list
+            return rhs_list
         # called from unknown function
         else:
             return []
@@ -242,7 +260,7 @@ def main():
     add_to_chart (1, 2, V, ('shot',), 1, None)
     ....
     """
-    print(len(bp_trees))
+    # print(len(bp_trees))
     """
     Out[14]: 2
     """
@@ -267,7 +285,7 @@ def main():
     [td predict] triggered (0, 1, S, (NP, VP), 1, [(0, 1, NP, ('I',), 1, None)])
     ...
     """
-    print(len(tp_trees))
+    # print(len(tp_trees))
     """
     Out[16]: 2
     """
@@ -276,3 +294,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
+references:
+[1] http://cs.union.edu/~striegnk/courses/nlp-with-prolog/html/node71.html
+
+"""
