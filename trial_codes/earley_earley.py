@@ -5,7 +5,6 @@ created in June of 2018
 import nltk
 
 
-
 def push(stack, state):
     stack.append(state)
     # stack.insert(0, state)
@@ -58,7 +57,7 @@ class EarleyParser():
                 success_id = self.back_tracker[len(self.tokens)][j][0]
                 self.__back_track(success_id)
 
-    
+
     # recursive function
     def __back_track(self, parent_id):
         # back-track (HACK: make into a function)
