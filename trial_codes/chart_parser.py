@@ -43,9 +43,12 @@ class Parser():
         # self.__check_success()
         self.trees = self.__make_trees(tokens)
         # print(self.chart)
+        print("========================")
         for edge in self.chart:
-            print(edge)
-        
+            if (self.__is_complete(edge)):
+                print(edge)
+        print("========================")
+
         print("this is history:")
         print(self.history)
         self.__back_track_history(tokens)
@@ -56,10 +59,10 @@ class Parser():
         return self.trees
 
 
+    # this back-track method does not suffice the objective of creating a tree
     # history = [{'original': (edge), 'generated': (edge)}, {}, ..., {}]
     # edge = (rule, dot_progress, begin_idx, dot_idx)
     def __back_track_history(self, tokens, find_success=True, original_edge=None):
-        
         if find_success:
             for pair in self.history:
                 gen_edge = pair['generated']
