@@ -3,9 +3,9 @@ author : takafumihoriuchi
 created in July of 2018
 """
 
-from nltk import CFG
 from parser_module import Parser
 from tree_module import TreeGenerator
+from nltk import CFG
 
 
 def main():
@@ -30,9 +30,9 @@ def main():
     # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
     print(chart)
 
-    # tree_gen = TreeGenerator(chart)
-    # tree = tree_gen.get_tree()
-    # print(tree)
+    tree_gen = TreeGenerator(chart)
+    tree = tree_gen.get_tree()
+    print(tree)
 
     ###
 

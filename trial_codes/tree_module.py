@@ -5,6 +5,7 @@ created in July of 2018
 
 from nltk import Tree
 
+
 class TreeGenerator(object):
 	
 	def __init__(self, chart):
@@ -12,24 +13,26 @@ class TreeGenerator(object):
 
 
 	def get_tree(self):
-		pass
+		passive_edges = self.__extract_passive_edges(self.chart)
+		return []
 
 
+	# edge = (rule, dot_progress, begin_idx, dot_idx)
 	def __extract_passive_edges(self, chart):
 		passive_edges = []
-		for edge in self.chart:
+		for edge in chart:
 			if (self.__is_complete(edge)):
 				passive_edges.append(edge)
 		return passive_edges
 
 
     # HACK: want to share this function with Parser class
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
     # returns True if edge is passive, False if active
 	def __is_complete(self, edge):
 		rhs_length = len(edge[0].rhs())
 		dot_progress = edge[1]
 		return (rhs_length == dot_progress)
+
 
 
 """
