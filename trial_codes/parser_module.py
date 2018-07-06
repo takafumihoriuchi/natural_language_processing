@@ -25,7 +25,7 @@ class Parser(object):
     # edge = (rule, dot_progress, begin_idx, dot_idx)
     def __initialize(self, tokens, start_symbol, parse_strategy, search_strategy):
         # add lexical-rules to chart/agenda
-        for i in reversed(range(len(tokens))):
+        for i in range(len(tokens)):
             rule = self.grammar.productions(rhs=tokens[i])[0]
             dot_prog = len(rule.rhs()) # (=1, indicate all rhs was found)
             terminant_passive_edge = (rule, dot_prog, i, i+1)
@@ -53,7 +53,6 @@ class Parser(object):
         self.__make_predictions(edge, parse_strategy, search_strategy)
 
 
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
     def __forward_fundamental_rule(self, edge, search_strategy):
         current_rule = edge[0]
         dot_progress = edge[1]
@@ -87,9 +86,9 @@ class Parser(object):
 
 
     def __make_predictions(self, edge, parse_strategy, search_strategy):
-        if (parse_strategy == "top_down") and (not self.__is_complete):
+        if (parse_strategy == "top_down") and (not self.__is_complete(edge)):
             self.__top_down_predict(edge, search_strategy) # edge is active
-        elif (parse_strategy == "bottom_up") and (self.__is_complete):
+        elif (parse_strategy == "bottom_up") and (self.__is_complete(edge)):
             self.__bottom_up_predict(edge, search_strategy) # edge is passive
 
 
@@ -150,7 +149,6 @@ class Parser(object):
 
 
     # return: 'True' if edge is passive; 'False' if edge is active
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
     def __is_complete(self, edge):
         rhs_length = len(edge[0].rhs())
         dot_progress = edge[1]
@@ -173,8 +171,7 @@ class Parser(object):
                 lhs_rhs_bidx_list.append(edge)
         return lhs_rhs_bidx_list
 
-    
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
+
     # extract edge of: (A -> a・Bb, [i,j])
     def __get_matching_edges_bf(self, rule_rhs, dot_idx):
         rhs_list = []
@@ -194,9 +191,9 @@ class Parser(object):
     # extract grammar of: (B -> y)
     def __get_matching_grammars_td(self, rule_lhs):
         lhs_list = []
-        for each_grammar in self.grammar:
-            if each_grammar.lhs()[0] == rule_lhs:
-                lhs_list.append()
+        for each_grammar in self.grammar.productions():
+            if str(each_grammar.lhs()) == str(rule_lhs):
+                lhs_list.append(each_grammar)
         return lhs_list
 
 
@@ -204,6 +201,6 @@ class Parser(object):
     def __get_matching_grammars_bu(self, rule_rhs):
         rhs_list = []
         for each_grammar in self.grammar.productions():
-            if each_grammar.rhs()[0] == rule_rhs:
+            if str(each_grammar.rhs()) == str(rule_rhs):
                 rhs_list.append(each_grammar)
         return rhs_list
