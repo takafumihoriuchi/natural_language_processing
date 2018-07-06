@@ -2,6 +2,7 @@
 author : takafumihoriuchi
 created in July of 2018
 """
+
 class Parser(object):
 
     def __init__(self, grammar):
@@ -201,6 +202,6 @@ class Parser(object):
     def __get_matching_grammars_bu(self, rule_rhs):
         rhs_list = []
         for each_grammar in self.grammar.productions():
-            if str(each_grammar.rhs()) == str(rule_rhs):
+            if str(each_grammar.rhs()[0]) == str(rule_rhs):
                 rhs_list.append(each_grammar)
         return rhs_list

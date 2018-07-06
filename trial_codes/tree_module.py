@@ -2,6 +2,7 @@
 author : takafumihoriuchi
 created in July of 2018
 """
+
 from nltk import Tree
 
 class TreeGenerator(object):

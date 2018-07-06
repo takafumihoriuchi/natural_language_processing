@@ -2,6 +2,7 @@
 author : takafumihoriuchi
 created in July of 2018
 """
+
 from nltk import CFG
 from parser_module import Parser
 from tree_module import TreeGenerator
@@ -25,8 +26,8 @@ def main():
     parser = Parser(grammar)
     # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='breadth_first')
     # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='depth_first')
-    # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
-    chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
+    chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
+    # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
     print(chart)
 
     # tree_gen = TreeGenerator(chart)
