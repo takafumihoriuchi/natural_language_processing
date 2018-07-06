@@ -39,7 +39,7 @@ class Parser():
             print("from agenda", edge)
             self.__process_edge(edge, parse_strategy, search_strategy)
 
-        ########
+        ###
         # self.__check_success()
         self.trees = self.__make_trees(tokens)
         # print(self.chart)
@@ -48,15 +48,46 @@ class Parser():
             if (self.__is_complete(edge)):
                 print(edge)
         print("========================")
-
-        print("this is history:")
-        print(self.history)
-        self.__back_track_history(tokens)
-
+        # print("this is history:")
+        # print(self.history)
+        # self.__back_track_history(tokens)
+        ###
         # clean chart (and agenda) for next use (but also want to keep the result)
         self.chart = []
         self.agenda = []
         return self.trees
+
+
+    # returns a list of trees, each in "nltk.tree.Tree" type
+    def __make_trees(self, tokens):
+        # get a list of passive edges
+        passive_edges = []
+        for edge in self.chart:
+            if (self.__is_complete(edge)):
+                passive_edges.append(edge)
+        # get rule with start symbol on lhs
+        total_arc = None
+        for edge in passive_edges:
+            s_check = (str(edge[0].lhs()) == str(self.start_symbol)) \
+                    and (edge[2] == 0) and (edge[3] == len(tokens))
+            if s_check is True:
+                total_arc = edge
+        if total_arc is None:
+            print("failed to find successful parse")
+            return
+        # total_arc = (S -> NP VP, 2, 0, 7)
+        # 'NP'をlhsにもつ規則を見つける。
+        # 見つけた各ルールについて、dot_idxで始まって、7で終わる'VP'をlhsにもつ規則を見つける。
+        progress = 0
+        for rhs_total_arc in total_arc[0].rhs():
+            # 'NP','VP'
+            for edge in passive_edges:
+                # each passive states
+                if (edge[0].lhs() == rhs_total_arc) and (edge[2] == progress):
+                    pass
+
+
+
 
 
     # this back-track method does not suffice the objective of creating a tree
@@ -278,11 +309,6 @@ class Parser():
         # called from unknown function
         else:
             return []
-
-
-    # returns a list of trees, each in "nltk.tree.Tree" type
-    def __make_trees(self, tokens):
-        pass
 
 
 
