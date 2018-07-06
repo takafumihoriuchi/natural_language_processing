@@ -35,10 +35,7 @@ class Parser(object):
             elif parse_strategy is 'bottom_up':
                 self.__add_to_agenda(terminant_passive_edge, search_strategy)
         if parse_strategy is 'top_down':
-            top_level_rules = []
-            for rule in self.grammar.productions():
-                if str(rule.lhs()) == str(start_symbol):
-                    top_level_rules.append(rule)
+            top_level_rules = self.__get_top_level_rules()
             for tlr in top_level_rules:
                 top_level_edge = (tlr, 0, 0, 0)
                 self.__add_to_agenda(top_level_edge, search_strategy)
@@ -205,3 +202,11 @@ class Parser(object):
             if str(each_grammar.rhs()[0]) == str(rule_rhs):
                 rhs_list.append(each_grammar)
         return rhs_list
+
+
+    def __get_top_level_rules(self):
+        top_level_rules = []
+        for rule in self.grammar.productions():
+            if str(rule.lhs()) == str(start_symbol):
+                top_level_rules.append(rule)
+        return top_level_rules

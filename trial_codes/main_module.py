@@ -30,7 +30,7 @@ def main():
     # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
     print(chart)
 
-    tree_gen = TreeGenerator(chart)
+    tree_gen = TreeGenerator(chart, tokens)
     tree = tree_gen.get_tree()
     print(tree)
 
