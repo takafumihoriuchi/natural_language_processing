@@ -23,12 +23,13 @@ def main():
     tokens = "I shot an elephant in my pajamas.".strip(".").split()
 
     parser = Parser(grammar)
+    # chart = parser.parse(tokens, parse_strategy='top_down')
     chart = parser.parse(tokens, parse_strategy='bottom_up')
     print(chart)
 
-    tree_gen = TreeGenerator(chart)
-    tree = tree_gen.get_tree()
-    print(tree)
+    # tree_gen = TreeGenerator(chart)
+    # tree = tree_gen.get_tree()
+    # print(tree)
 
     ###
 
