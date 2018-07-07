@@ -14,6 +14,7 @@ class TreeGenerator(object):
         self.start_symbol = start_symbol
 
 
+    # returns a list of trees, each in nltk.tree.Tree type
     def get_tree(self):
         passive_edges = self.__extract_passive_edges(self.chart)
         top_arc = self.__get_top_level_arc(passive_edges)
@@ -28,12 +29,46 @@ class TreeGenerator(object):
             print(edge)
         print("==============================")
 
+
+        ###
         # ここを埋める
+        # passive_edgesのedgesからtreeを作る
+        ###
+        # attempt 1; can find the first tree only (for updating 'progress'), by luck
+        tree_candidate = []
+        tree_candidate.append(top_arc)
+        tmp_queue = []
+        tmp_queue.append(top_arc)
+
+        while tmp_queue:
+            tmp_edge = tmp_queue.pop(0)
+            progress = tmp_edge[2]
+            if (tmp_edge[3] - tmp_edge[2] <= 1):
+                continue
+            for tmp_rhs in tmp_edge[0].rhs():
+                for edge in passive_edges:
+                    if (edge[0].lhs() == tmp_rhs) and (edge[2] == progress):
+                        tmp_queue.append(edge)
+                        tree_candidate.append(edge)
+                        progress = edge[3] # ここで進めてしまう前に、ほかの候補も欲しい
+        
+        print(tree_candidate)
+
+        print("==============================")
+        parse_tree = self.__find_parse_tree(passive_edges, [], top_arc)
+        print("parse_tree:")
+        print(parse_tree)
+        print("==============================")
         ###
 
         # treeを返す
         return []
         #####
+
+
+    def __find_parse_tree(self, passive_edges, parse_tree, arc):
+        pass
+
 
 
     def __get_top_level_arc(self, passive_edges):
@@ -45,6 +80,7 @@ class TreeGenerator(object):
             s_check = check_symbol and check_bidx and check_didx
             if s_check is True:
                 top_arc = edge
+                break
         return top_arc
 
 

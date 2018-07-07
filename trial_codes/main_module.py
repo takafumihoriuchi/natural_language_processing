@@ -52,4 +52,5 @@ if __name__ == '__main__':
 references:
 [1] http://cs.union.edu/~striegnk/courses/nlp-with-prolog/html/node71.html
 [2] http://www.ling.helsinki.fi/kit/2008s/clt231/nltk-0.9.5/doc/en/ch08.html
+[3] https://www.nltk.org/api/nltk.html#nltk.tree.Tree
 """

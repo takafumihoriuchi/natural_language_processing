@@ -19,8 +19,9 @@ class Parser(object):
         while (self.agenda):
             edge = self.agenda.pop(0)
             self.__process_edge(edge, parse_strategy, search_strategy)
-        # HACK: need to clear chart (and agenda) for next use?
-        return self.chart
+        copy_of_chart = self.chart
+        self.chart = []
+        return copy_of_chart
 
 
     # edge = (rule, dot_progress, begin_idx, dot_idx)
@@ -35,7 +36,7 @@ class Parser(object):
             elif parse_strategy is 'bottom_up':
                 self.__add_to_agenda(terminant_passive_edge, search_strategy)
         if parse_strategy is 'top_down':
-            top_level_rules = self.__get_top_level_rules()
+            top_level_rules = self.__get_top_level_rules(start_symbol)
             for tlr in top_level_rules:
                 top_level_edge = (tlr, 0, 0, 0)
                 self.__add_to_agenda(top_level_edge, search_strategy)
@@ -204,7 +205,7 @@ class Parser(object):
         return rhs_list
 
 
-    def __get_top_level_rules(self):
+    def __get_top_level_rules(self, start_symbol):
         top_level_rules = []
         for rule in self.grammar.productions():
             if str(rule.lhs()) == str(start_symbol):
