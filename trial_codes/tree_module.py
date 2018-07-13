@@ -34,34 +34,9 @@ class TreeGenerator(object):
         print(parse_tree)
         print("==============================")
 
-        ###
-        # ここを埋める
-        # passive_edgesのedgesからtreeを作る
-        # edge = (rule, dot_progress, begin_idx, dot_idx)
-        ###
-        # attempt 1; can find the first tree only (for updating 'progress'), by luck
-        """
-        tree_candidate = []
-        tree_candidate.append(top_arc)
-        tmp_queue = []
-        tmp_queue.append(top_arc)
-
-        while tmp_queue:
-            tmp_edge = tmp_queue.pop(0)
-            progress = tmp_edge[2]
-            if (tmp_edge[3] - tmp_edge[2] <= 1):
-                continue # skip terminants
-            for tmp_rhs in tmp_edge[0].rhs():
-                for edge in passive_edges:
-                    if (edge[0].lhs() == tmp_rhs) and (edge[2] == progress):
-                        tmp_queue.append(edge)
-                        tree_candidate.append(edge)
-                        progress = edge[3] # ここで進めてしまう前に、ほかの候補も欲しい
-        print(tree_candidate)
-        """
-        ###
-
         # treeを返す
+        # 最終的には、ファイルに書き出して、string型で読みだして、それをTreeの形式に変更する？
+        # 一次生成したファイルは、削除するのも忘れずに
         return parse_tree
         #####
 
@@ -70,6 +45,7 @@ class TreeGenerator(object):
     # start: __find_parse_tree(passive_edges, [], top_arc)
     def __find_parse_tree(self, passive_edges, arc):
         parse_tree = [arc[0]]
+        # parse_tree = [arc[0].lhs()] # 木を作るときにはこちらを使う
         if (arc[3] - arc[2] == 1): # base case
             return [arc[0]] # terminant
         progress = arc[2]
@@ -78,6 +54,7 @@ class TreeGenerator(object):
                 if (cand_edge[0].lhs() == each_rhs) and (cand_edge[2] == progress):
                     parse_tree.append(self.__find_parse_tree(passive_edges, cand_edge))
                     progress = cand_edge[3]
+                    break
         return parse_tree
 
 
