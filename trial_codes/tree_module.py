@@ -25,16 +25,22 @@ class TreeGenerator(object):
 
         # 使うことのできる arc：
         print("==============================")
+        print("passive_edges:")
         for edge in passive_edges:
             print(edge)
         print("==============================")
-
+        parse_tree = self.__find_parse_tree(passive_edges, top_arc)
+        print("parse_tree:")
+        print(parse_tree)
+        print("==============================")
 
         ###
         # ここを埋める
         # passive_edgesのedgesからtreeを作る
+        # edge = (rule, dot_progress, begin_idx, dot_idx)
         ###
         # attempt 1; can find the first tree only (for updating 'progress'), by luck
+        """
         tree_candidate = []
         tree_candidate.append(top_arc)
         tmp_queue = []
@@ -44,30 +50,36 @@ class TreeGenerator(object):
             tmp_edge = tmp_queue.pop(0)
             progress = tmp_edge[2]
             if (tmp_edge[3] - tmp_edge[2] <= 1):
-                continue
+                continue # skip terminants
             for tmp_rhs in tmp_edge[0].rhs():
                 for edge in passive_edges:
                     if (edge[0].lhs() == tmp_rhs) and (edge[2] == progress):
                         tmp_queue.append(edge)
                         tree_candidate.append(edge)
                         progress = edge[3] # ここで進めてしまう前に、ほかの候補も欲しい
-        
         print(tree_candidate)
-
-        print("==============================")
-        parse_tree = self.__find_parse_tree(passive_edges, [], top_arc)
-        print("parse_tree:")
-        print(parse_tree)
-        print("==============================")
+        """
         ###
 
         # treeを返す
-        return []
+        return parse_tree
         #####
 
 
-    def __find_parse_tree(self, passive_edges, parse_tree, arc):
-        pass
+    # edge = (rule, dot_progress, begin_idx, dot_idx)
+    # start: __find_parse_tree(passive_edges, [], top_arc)
+    def __find_parse_tree(self, passive_edges, arc):
+        parse_tree = [arc[0]]
+        if (arc[3] - arc[2] == 1): # base case
+            return [arc[0]] # terminant
+        progress = arc[2]
+        for each_rhs in arc[0].rhs():
+            for cand_edge in passive_edges:
+                if (cand_edge[0].lhs() == each_rhs) and (cand_edge[2] == progress):
+                    parse_tree.append(self.__find_parse_tree(passive_edges, cand_edge))
+                    progress = cand_edge[3]
+        return parse_tree
+
 
 
 

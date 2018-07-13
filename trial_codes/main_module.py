@@ -32,7 +32,7 @@ def main():
 
     tree_gen = TreeGenerator(chart, tokens)
     tree = tree_gen.get_tree()
-    print(tree)
+    # print(tree)
 
     ###
 

@@ -19,6 +19,7 @@ class Parser(object):
         while (self.agenda):
             edge = self.agenda.pop(0)
             self.__process_edge(edge, parse_strategy, search_strategy)
+        # clear chart for next use
         copy_of_chart = self.chart
         self.chart = []
         return copy_of_chart
