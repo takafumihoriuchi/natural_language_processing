@@ -2,7 +2,8 @@
 author : takafumihoriuchi
 created in July of 2018
 """
-
+import os
+import signal
 from nltk import Tree
 
 
@@ -15,6 +16,7 @@ class TreeGenerator(object):
 
 
     # returns a list of trees, each in nltk.tree.Tree type
+    # guaranteed that there is at least one parse tree
     def get_tree(self):
         passive_edges = self.__extract_passive_edges(self.chart)
         top_arc = self.__get_top_level_arc(passive_edges)
@@ -50,13 +52,35 @@ class TreeGenerator(object):
             return [arc[0]] # terminant
         progress = arc[2]
         for each_rhs in arc[0].rhs():
+            cand_list = []
+            for edge in passive_edges:
+                if (edge[0].lhs() == each_rhs) and (edge[2] == progress):
+                    cand_list.append(edge)
+            for cand_edge in cand_list:
+                parse_tree.append(self.__find_parse_tree(passive_edges, cand_edge))
+                progress = cand_edge[3]
+                break
+                # ここまでのparse_treeをまるっとコピーして、完全に新しく続きを作りたい
+        return parse_tree
+
+
+    """
+    # edge = (rule, dot_progress, begin_idx, dot_idx)
+    # start: __find_parse_tree(passive_edges, [], top_arc)
+    def __find_parse_tree(self, passive_edges, arc):
+        parse_tree = [arc[0]]
+        # parse_tree = [arc[0].lhs()] # 木を作るときにはこちらを使う
+        if (arc[3] - arc[2] == 1): # base case
+            return [arc[0]] # terminant
+        progress = arc[2]
+        for each_rhs in arc[0].rhs():
             for cand_edge in passive_edges:
                 if (cand_edge[0].lhs() == each_rhs) and (cand_edge[2] == progress):
                     parse_tree.append(self.__find_parse_tree(passive_edges, cand_edge))
                     progress = cand_edge[3]
                     break
         return parse_tree
-
+    """
 
 
 
