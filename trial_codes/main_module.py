@@ -4,7 +4,7 @@ created in July of 2018
 """
 
 from parser_module import Parser
-from tmp_tree_module import TreeGenerator
+from tmptmp_tree_module import TreeGenerator
 from nltk import CFG
 
 
@@ -31,7 +31,6 @@ def main():
     print(chart)
     tree_gen = TreeGenerator(chart, tokens)
     tree = tree_gen.get_tree()
-    print("==========================")
     for edge in tree_gen.passive_edges:
         print(edge)
     print("==========================")

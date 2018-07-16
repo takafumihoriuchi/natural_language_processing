@@ -3,6 +3,7 @@ author : takafumihoriuchi
 created in July of 2018
 """
 from nltk import Tree
+import sys
 
 
 class TreeGenerator(object):
@@ -28,22 +29,42 @@ class TreeGenerator(object):
 
 
     def __find_parse_tree(self, top_arc):
-        self.parse_tree_list = []
-        print("==========================")
-        parse_tree = self.__build_tree(top_arc)
-        print(parse_tree)
-        return parse_tree
+        # self.parse_tree_list = []
+        # self.working_tree_stack = []
+        # parse_tree = self.__build_tree(top_arc)
+        # return parse_tree
+        progress = top_arc[2]    
+        matching_edges_0 = self.__find_matching_edges(top_arc, 0, progress)
+        print("matching_edges_0:", matching_edges_0)
+        for edge in matching_edges_0:
+            progress = edge[3]
+            matching_edges_1 = self.__find_matching_edges(top_arc, 1, progress)
+            print("matching_edges_1:", matching_edges_1)
+        sys.exit(1)
+
+
+    # arc = (rule, dot_progress, begin_idx, dot_idx)
+    def __find_matching_edges(self, arc, nth_rhs, progress):
+        if self.__is_terminant(arc):
+            return [arc[0]]
+        matching_edges = []
+        for cand_edge in self.passive_edges:
+            symb_match = (cand_edge[0].lhs() == arc[0].rhs()[nth_rhs])
+            prog_match = (cand_edge[2] == progress)
+            if (symb_match and prog_match):
+                matching_edges.append(cand_edge)
+        return matching_edges
 
 
     # return "list of parse-tree-lists"
     # edge = (rule, dot_progress, begin_idx, dot_idx)
     # start: __find_parse_tree(passive_edges, [], top_arc)
     def __build_tree(self, arc):
-        if (arc[3] - arc[2] == 1): # base case
-            return [arc[0]] # terminant
+        if self.__is_terminant(arc):
+            return [arc[0]]
         parse_tree = [arc[0].lhs()]
         progress = arc[2]
-        for each_rhs in arc[0].rhs():
+        for i, each_rhs in enumerate(arc[0].rhs()):
             for cand_edge in self.passive_edges:
                 symb_match = (cand_edge[0].lhs() == each_rhs)
                 prog_match = (cand_edge[2] == progress)
@@ -51,7 +72,13 @@ class TreeGenerator(object):
                     parse_tree.append(self.__build_tree(cand_edge))
                     progress = cand_edge[3]
                     break
+            # ここでprogressをいじくりたい
         return parse_tree
+
+
+    # arc = (rule, dot_progress, begin_idx, dot_idx)
+    def __is_terminant(self, arc):
+        return (arc[3] - arc[2] == 1)
 
     
     # format list to type 'nltk.tree.Tree'
