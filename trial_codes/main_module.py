@@ -4,7 +4,7 @@ created in July of 2018
 """
 
 from parser_module import Parser
-from tmptmp_tree_module import TreeGenerator
+from tree_module import TreeGenerator
 from nltk import CFG
 
 
