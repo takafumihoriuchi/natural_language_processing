@@ -4,7 +4,7 @@ created in July of 2018
 """
 
 from parser_module import Parser
-from tree_module import TreeGenerator
+from tmp_tree_module import TreeGenerator
 from nltk import CFG
 
 
@@ -29,10 +29,14 @@ def main():
     chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
     # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
     print(chart)
-
     tree_gen = TreeGenerator(chart, tokens)
     tree = tree_gen.get_tree()
-    # print(tree)
+    print("==========================")
+    for edge in tree_gen.passive_edges:
+        print(edge)
+    print("==========================")
+    print(tree)
+    print(len(tree))
 
     ###
 
