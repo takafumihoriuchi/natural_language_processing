@@ -15,7 +15,7 @@ class TreeGenerator(object):
 
     # returns a list of trees, each in nltk.tree.Tree type
     # guaranteed that there is at least one parse tree
-    def get_tree(self):
+    def get_trees(self):
         self.passive_edges = self.__extract_passive_edges(self.chart)
         top_arc = self.__get_top_level_arc(self.passive_edges)
         if top_arc is None:
@@ -29,43 +29,26 @@ class TreeGenerator(object):
         possible_parse_trees.append(parse_tree)
 
         #print("==========================")
-        #print("self.tmp_storage:")
-        #for each in self.tmp_storage:
-        #    print(each)
-        #print("==========================")
-
-        #print("parse_tree:")
-        #print(parse_tree)
-
-        #print("==========================")
         while self.tmp_storage:
             tmp_state = self.tmp_storage.pop(0)
             another_parse_tree = tmp_state[0]
-            #print("another_parse_tree:")
-            #print(another_parse_tree)
             another_arc = tmp_state[1]
-            #print("another_arc:")
-            #print(another_arc)
             init_nth = tmp_state[2]
-            #print("init_nth:")
-            #print(init_nth)
             another_tree = self.__build_parse_tree(another_arc, another_parse_tree, init_nth)
-            #print("another_tree:")
-            #print(another_tree)
             possible_parse_trees.append(another_tree)
 
         print("==========================")
         for i, possibillity in enumerate(possible_parse_trees):
             print("tree #0%d:" % (i+1))
             print(possibillity)
+        print("==========================")
 
-        print("==========================")
-        print("parse_tree:")
-        print(parse_tree)
-        print("==========================")
-        formatted_parse_tree = self.__format_parse_tree(parse_tree)
-        # ここでは、'nltk.tree.Tree' の list を返したい
-        return formatted_parse_tree
+        formatted_possible_parse_trees = []
+        for possibillity in possible_parse_trees:
+            formatted_parse_tree = self.__format_parse_tree(possibillity)
+            formatted_possible_parse_trees.append(formatted_parse_tree)
+        
+        return formatted_possible_parse_trees
 
 
     # return "list of parse-tree-lists"
@@ -76,8 +59,8 @@ class TreeGenerator(object):
             return [arc[0]]
 
         if init_parse_tree is None:
-            # parse_tree = list([arc[0].lhs()])
-            parse_tree = list([arc[0]])
+            parse_tree = list([arc[0].lhs()])
+            # parse_tree = list([arc[0]])
         else:
             parse_tree = list(init_parse_tree)
         

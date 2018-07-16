@@ -28,15 +28,20 @@ def main():
     # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='depth_first')
     chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
     # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
+    print("==========================")
+    print("chart:")
     print(chart)
     tree_gen = TreeGenerator(chart, tokens)
-    tree = tree_gen.get_tree()
-    for edge in tree_gen.passive_edges:
-        print(edge)
+    trees = tree_gen.get_trees()
+    #for edge in tree_gen.passive_edges:
+    #    print(edge)
     print("==========================")
-    print(tree)
-    print(len(tree))
-
+    print("trees:")
+    for tree in trees:
+        print(tree)
+    print("==========================")
+    print("number of possible trees:", len(trees))
+    print("==========================")
     ###
 
     # bp_trees = parser.parse(tokens, parse_strategy='bottom_up')
