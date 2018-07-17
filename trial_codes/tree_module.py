@@ -11,6 +11,8 @@ class TreeGenerator(object):
         self.chart = chart
         self.tokens = tokens
         self.start_symbol = start_symbol
+        self.passive_edges = None # initialized later
+        self.work_stack = [] # for storing states during recursion
 
 
     # returns a list of trees, each in nltk.tree.Tree type
@@ -25,81 +27,80 @@ class TreeGenerator(object):
         
         # full list of parse trees
         possible_parse_trees = []
-        # working-stack for storing states during recursion
-        self.tmp_storage = []
-
         # first search of parse tree; prepare working-stack
         parse_tree = self.__build_parse_tree(top_arc)
         possible_parse_trees.append(parse_tree)
 
-        while self.tmp_storage:
-            tmp_state = self.tmp_storage.pop(0)
-            another_parse_tree = tmp_state[0]
-            another_arc = tmp_state[1]
-            init_nth = tmp_state[2]
-            another_tree = self.__build_parse_tree(another_arc, another_parse_tree, init_nth)
-            possible_parse_trees.append(another_tree)
+        # search of alternative parse trees
+        while self.work_stack:
+            tmp_state = self.work_stack.pop(0)
+            alt_parse_tree = tmp_state[0]
+            alt_arc = tmp_state[1]
+            alt_init_nth = tmp_state[2]
+            alt_tree = self.__build_parse_tree(alt_arc, alt_parse_tree, alt_init_nth)
+            possible_parse_trees.append(alt_tree)
 
         formatted_possible_parse_trees = []
-        for possibillity in possible_parse_trees:
-            formatted_parse_tree = self.__format_parse_tree(possibillity)
+        for parse_list in possible_parse_trees:
+            formatted_parse_tree = self.__format_parse_tree(parse_list)
             formatted_possible_parse_trees.append(formatted_parse_tree)
         
         return formatted_possible_parse_trees
 
 
-    # return "list of parse-tree-lists"
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
-    # start: __find_parse_tree(passive_edges, [], top_arc)
+    # recursively search for a parse tree
+    # cf. (arc == edge) in meaning
+    # cf. edge = (rule, dot_progress, begin_idx, dot_idx)
     def __build_parse_tree(self, arc, init_parse_tree=None, init_nth=None):
+        
+        # base-case of recursion
         if self.__is_terminant(arc):
             return [arc[0]]
 
-        if init_parse_tree is None:
-            parse_tree = list([arc[0].lhs()])
-            # parse_tree = list([arc[0]])
-        else:
-            parse_tree = list(init_parse_tree)
+        # initialize parse tree
+        if init_parse_tree is None: parse_tree = list([arc[0].lhs()])
+        else                      : parse_tree = list(init_parse_tree)
         
+        # body of recursion
         progress = arc[2]
         for nth_rhs, each_rhs in enumerate(arc[0].rhs()):
-        
+            
+            # consider information from working-stack
             alt_arcs = []
-
             lock = False
-            if (init_nth is None):
-                pass
-            elif (nth_rhs < init_nth):
-                continue
+            if (init_nth is None): pass
+            elif (nth_rhs < init_nth): continue
             elif (init_nth == nth_rhs):
                 alt_arcs.append(list(arc))
                 lock = True
-            else:
-                pass
+            else: pass
 
+            # collect adequate edges
             if lock is False:
                 for cand_edge in self.passive_edges:
                     symb_match = (cand_edge[0].lhs() == each_rhs)
                     prog_match = (cand_edge[2] == progress)
-                    end_match = (cand_edge[3] != len(self.tokens))  \
-                                if (nth_rhs < len(arc[0].rhs()) - 1) \
+                    end_match = (cand_edge[3] != len(self.tokens))\
+                                if (nth_rhs < len(arc[0].rhs()) - 1)\
                                 else (cand_edge[3] == arc[3])
                     if (symb_match and prog_match and end_match):
                         alt_arcs.append(list(cand_edge))
 
             while alt_arcs:
-                tmp_arc = list(alt_arcs.pop()) # remove the last item in list
+                # cf. pop(): remove the last item in list
+                tmp_arc = list(alt_arcs.pop())
                 tmp_state = (list(parse_tree), tmp_arc, nth_rhs)
-                self.tmp_storage.insert(0, tmp_state)
+                self.work_stack.insert(0, tmp_state)
             
-            alt_arc = list((self.tmp_storage.pop(0))[1])
+            # proceed with the first arc in working-stack
+            alt_arc = list((self.work_stack.pop(0))[1])
             parse_tree.append(list(self.__build_parse_tree(alt_arc)))
             progress = alt_arc[3]
         
         return list(parse_tree)
 
 
-    # arc = (rule, dot_progress, begin_idx, dot_idx)
+    # cf. arc = (rule, dot_progress, begin_idx, dot_idx)
     def __is_terminant(self, arc):
         return (arc[3] - arc[2] == 1)
 

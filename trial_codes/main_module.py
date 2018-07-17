@@ -24,35 +24,39 @@ def main():
 
     parser = Parser(grammar)
     
-    # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='breadth_first')
-    # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='depth_first')
-    chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
-    # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
+    # parse_strategy  = { 'bottom_up'     | 'top_down'    }
+    # search_strategy = { 'breadth_first' | 'depth_first' }
+    parse_strategy = 'bottom_up'
+    search_strategy = 'breadth_first'
 
-    print("==========================")
-    print("chart:")
-    print(chart)
-    
+    chart = parser.parse(tokens, parse_strategy=parse_strategy, search_strategy=search_strategy)
+
     tree_gen = TreeGenerator(chart, tokens)
     trees = tree_gen.get_trees()
-    
-    print("==========================")
-    print("trees:")
+
+    print("========================================================")
+    print("A chart-parser with parse-tree formatter;")
+    print("Created by Takafumi Horiuchi in July of 2018.")
+    print("========================================================")
+    print("[input]", grammar)
+    print("========================================================")
+    print("[input] tokens:")
+    print(tokens)
+    print("========================================================")
+    print("[options]")
+    print("parse-strategy  :", parse_strategy)
+    print("search-strategy :", search_strategy)
+    print("========================================================")
+    print("[result] chart:")
+    for edge in chart:
+        print(edge)
+    print("========================================================")
+    print("[result] trees:")
     for tree in trees:
         print(tree)
-    
-    print("==========================")
-    print("number of possible trees:", len(trees))
-    
-    print("==========================")
-    ###
-
-    # bp_trees = parser.parse(tokens, parse_strategy='bottom_up')
-    # print(len(bp_trees))
-
-    # tp_trees = parser.parse(tokens, parse_strategy='top_down')
-    # print(len(tp_trees))
-
+    print("========================================================")
+    print("[result] number of yielded trees:", len(trees))
+    print("========================================================")
 
 
 if __name__ == '__main__':

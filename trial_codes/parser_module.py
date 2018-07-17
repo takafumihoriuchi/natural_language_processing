@@ -136,8 +136,8 @@ class Parser(object):
 
 
     # order of entry depends on search_strategy
-    # stack => depth_first_search, queue => breadth_first_search
-    # return: 'True' if insertion success; 'False' if failed
+    # stack => depth_first_search; queue => breadth_first_search
+    # return: 'True' if insertion success / 'False' if failed
     def __add_to_agenda(self, edge, search_strategy):
         if (edge not in self.agenda) and (edge not in self.chart):
             if search_strategy is 'depth_first':
