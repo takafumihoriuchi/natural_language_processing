@@ -2,10 +2,9 @@
 author : takafumihoriuchi
 created in July of 2018
 """
-
+from nltk import CFG
 from parser_module import Parser
 from tree_module import TreeGenerator
-from nltk import CFG
 
 
 def main():
@@ -24,23 +23,27 @@ def main():
     tokens = "I shot an elephant in my pajamas.".strip(".").split()
 
     parser = Parser(grammar)
+    
     # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='breadth_first')
     # chart = parser.parse(tokens, parse_strategy='top_down', search_strategy='depth_first')
     chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='breadth_first')
     # chart = parser.parse(tokens, parse_strategy='bottom_up', search_strategy='depth_first')
+
     print("==========================")
     print("chart:")
     print(chart)
+    
     tree_gen = TreeGenerator(chart, tokens)
     trees = tree_gen.get_trees()
-    #for edge in tree_gen.passive_edges:
-    #    print(edge)
+    
     print("==========================")
     print("trees:")
     for tree in trees:
         print(tree)
+    
     print("==========================")
     print("number of possible trees:", len(trees))
+    
     print("==========================")
     ###
 
@@ -61,4 +64,5 @@ references:
 [1] http://cs.union.edu/~striegnk/courses/nlp-with-prolog/html/node71.html
 [2] http://www.ling.helsinki.fi/kit/2008s/clt231/nltk-0.9.5/doc/en/ch08.html
 [3] https://www.nltk.org/api/nltk.html#nltk.tree.Tree
+... and more python related websites
 """

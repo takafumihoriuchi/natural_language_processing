@@ -14,21 +14,24 @@ class TreeGenerator(object):
 
 
     # returns a list of trees, each in nltk.tree.Tree type
-    # guaranteed that there is at least one parse tree
     def get_trees(self):
+        
         self.passive_edges = self.__extract_passive_edges(self.chart)
         top_arc = self.__get_top_level_arc(self.passive_edges)
+        
         if top_arc is None:
             print("FAILURE: no successful parse found")
             return None
         
-        possible_parse_trees = [] # store all possible parse trees
-        self.tmp_storage = [] # working list to store state info
+        # full list of parse trees
+        possible_parse_trees = []
+        # working-stack for storing states during recursion
+        self.tmp_storage = []
 
+        # first search of parse tree; prepare working-stack
         parse_tree = self.__build_parse_tree(top_arc)
         possible_parse_trees.append(parse_tree)
 
-        #print("==========================")
         while self.tmp_storage:
             tmp_state = self.tmp_storage.pop(0)
             another_parse_tree = tmp_state[0]
@@ -102,6 +105,7 @@ class TreeGenerator(object):
 
     
     # format list to type 'nltk.tree.Tree'
+    # eg. parse_list = [S, [NP -> 'I'], [VP, [V -> 'shot'], [...]]]
     def __format_parse_tree(self, parse_list):
         tmp_str_a = str(parse_list)
         tmp_str_b = tmp_str_a.replace("[", "(")
@@ -113,20 +117,21 @@ class TreeGenerator(object):
         return parse_tree
 
 
+    # cf. edge = (rule, dot_progress, begin_idx, dot_idx)
     def __get_top_level_arc(self, passive_edges):
         top_arc = None
         for edge in passive_edges:
             check_symbol = (str(edge[0].lhs()) == str(self.start_symbol))
-            check_bidx = (edge[2] == 0)
-            check_didx = (edge[3] == len(self.tokens))
-            s_check = check_symbol and check_bidx and check_didx
-            if s_check is True:
+            check_beg_idx = (edge[2] == 0)
+            check_dot_idx = (edge[3] == len(self.tokens))
+            top_check = check_symbol and check_beg_idx and check_dot_idx
+            if top_check is True:
                 top_arc = edge
                 break
         return top_arc
 
 
-    # edge = (rule, dot_progress, begin_idx, dot_idx)
+    # cf. edge = (rule, dot_progress, begin_idx, dot_idx)
     def __extract_passive_edges(self, chart):
         passive_edges = []
         for edge in chart:
@@ -136,7 +141,7 @@ class TreeGenerator(object):
 
 
     # HACK: want to share this function with Parser class
-    # returns True if edge is passive, False if active
+    # returns True for passive-edges / False for active-edges
     def __is_complete(self, edge):
         rhs_length = len(edge[0].rhs())
         dot_progress = edge[1]
