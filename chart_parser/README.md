@@ -1,5 +1,8 @@
+# chart parser
 ```
-tkf-mbp:chart_parser takafumih$ python main_module.py 
+tkf-hruc:chart_parser takafumih$
+tkf-hruc:chart_parser takafumih$
+tkf-hruc:chart_parser takafumih$ python main_module.py 
 ========================================================
 A chart-parser with parse-tree formatter;
 Created by Takafumi Horiuchi in July of 2018.
@@ -72,7 +75,7 @@ search-strategy : breadth_first
 ========================================================
 [result] number of yielded trees: 2
 ========================================================
-tkf-mbp:chart_parser takafumih$ 
-tkf-mbp:chart_parser takafumih$ 
-tkf-mbp:chart_parser takafumih$ 
+tkf-hruc:chart_parser takafumih$ 
+tkf-hruc:chart_parser takafumih$ 
+tkf-hruc:chart_parser takafumih$ 
 ```
