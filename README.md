@@ -97,4 +97,4 @@ takafumihoriuchi$
 
 
 ## chart-parser
-see [a link](https://github.com/takafumihoriuchi/natural_language_processing/tree/master/chart_parser)
+see [here](https://github.com/takafumihoriuchi/natural_language_processing/tree/master/chart_parser)
