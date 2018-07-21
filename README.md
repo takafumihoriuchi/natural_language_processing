@@ -2,6 +2,9 @@
 
 This repository contains implementations of Natural Language Processing related problems.
 
+### contents
+- POS estimator by viterbi algorithm
+- chart parser syntatic analysis
 
 ## viterbi_pos_estimate.py
 
@@ -93,4 +96,5 @@ takafumihoriuchi$
 ```
 
 
-## others comming soon...
+## chart-parser
+see [a link](https://github.com/takafumihoriuchi/natural_language_processing/tree/master/chart_parser)
