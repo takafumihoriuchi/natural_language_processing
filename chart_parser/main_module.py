@@ -43,8 +43,9 @@ def main():
     print("[input] tokens:")
     print(tokens)
     print("========================================================")
-    print("[options] parse-strategy  :", parse_strategy)
-    print("          search-strategy :", search_strategy)
+    print("[options]")
+    print("parse-strategy  :", parse_strategy)
+    print("search-strategy :", search_strategy)
     print("========================================================")
     print("[result] chart:")
     for edge in chart:
